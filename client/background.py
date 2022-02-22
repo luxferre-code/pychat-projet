@@ -66,7 +66,7 @@ def get_client(idd: int):
     assert type(idd) == int, "L'id est invalide"
     connexion = sqlite3.connect(database)
     cursor = connexion.cursor()
-    cursor.execute("SELECT pseudo, mail FROM Clients WHERE id == ?", (idd,))
+    cursor.execute("SELECT pseudo, mail FROM Clients WHERE id = ?", (idd,))
     c  = cursor.fetchone()
     connexion.commit()
     connexion.close()
