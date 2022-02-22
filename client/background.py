@@ -2,6 +2,7 @@
 
 import sqlite3
 from random import randint
+import hashlib
 
 database = "db_server.db"
 
@@ -69,3 +70,35 @@ def get_client(idd: int):
     cursor.execute("SELECT pseudo, mail FROM Clients WHERE id == ?", (idd,))
     
     return cursor.fetchone()
+
+def to_sha256(pwd: str)->str:
+    """Transformation du mot de passe en sha256 (sécurité)
+    Parameter:
+        pwd : str
+    Return:
+        str
+    # Juliann Lestrelin
+    """
+    return hashlib.sha256(bytes(pwd, 'utf-8')).hexdigest()
+
+def good_login(username: str, password: str) -> bool:
+    """
+    Fonction permettant de vérifier les identifiants de connexion
+    
+    param:
+    username: string (soit le pseudo ou bien le mail)
+    password: string
+    
+    Return type: boolean
+    # Valentin Thuillier
+    """
+    assert isinstance(username, str), "Merci de rentrer comme identifiants un string !"
+    assert isinstance(password, str), "Merci de rentrer comme mot de passe un string !"
+    
+    connect = sqlite3.connect(database)
+    cursor = connect.cursor()
+    cursor.execute('SELECT id FROM Clients WHERE pseudo = ? AND password = ?', (username, password))
+    if(cursor.fetchone() != None): return True
+    cursor.execute('SELECT id FROM Clients WHERE mail = ? AND password = ?', (username, password))
+    if(cursor.fetchone() != None): return True
+    return False
