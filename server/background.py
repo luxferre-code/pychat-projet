@@ -4,7 +4,32 @@ import sqlite3
 
 database = 'db_server.db'
 
-def get_client(idd: int):
+def id_in_db(idd: int) -> bool:
+    """
+    Fonction permettant de vérifier si un id est dans la base de donnée
+    
+    param:
+    idd: integer
+    
+    Return type: boolean
+    # Valentin Thuillier 
+    """
+    assert isinstance(idd, int), "L'id doit être un integer !"
+    assert len(idd) == 10, "L'id spécifié n'est pas valide !"
+    
+    connect = sqlite3.connect(database)
+    cursor = connect.cursor()
+    cursor.execute('SELECT count(id) FROM Clients WHERE id = ?', (idd, ))
+    if(cursor.fetchone() == None):
+        connect.commit()
+        connect.close()
+        return False
+    connect.commit()
+    connect.close()
+    return True
+    
+
+def get_client(idd: int) -> tuple:
     """Récupère les informations du client ( nom et mail)
     Parameters:
         id : int
@@ -25,7 +50,7 @@ def id_is_admin(idd: int) -> bool:
     Fonction permettant de verifier si un id est un administrateur
     
     param:
-    idd: int
+    idd: integer
     
     Return type: boolean
     # Valentin Thuillier
@@ -49,7 +74,7 @@ def kick(idd: int) -> bool:
     Fonction permettant de kick un utilisateur de PyChat grâce à son id
     
     param:
-    idd: int
+    idd: integer
     
     Return type: boolean
     # Valentin Thuillier
