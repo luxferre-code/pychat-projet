@@ -116,7 +116,7 @@ def change_name(idd: int,nwpsd: str):
     
     connect = sqlite3.connect(database)
     cursor = connect.cursor()
-    cursor.execute("UPDATE Clients SET pseudo = ? WHERE id = ?" (nwpsd, idd))
+    cursor.execute("UPDATE Clients SET pseudo = ? WHERE id = ?", (nwpsd, idd))
     connect.commit()
     connect.close()
 
