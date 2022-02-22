@@ -102,3 +102,5 @@ def good_login(username: str, password: str) -> bool:
     cursor.execute('SELECT id FROM Clients WHERE mail = ? AND password = ?', (username, password))
     if(cursor.fetchone() != None): return True
     return False
+
+# Commencer le 22/02/2022
