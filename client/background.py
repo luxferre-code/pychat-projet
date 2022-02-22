@@ -105,7 +105,15 @@ def good_login(username: str, password: str) -> bool:
     if(cursor.fetchone() != None): return True
     return False
 
-def change_name(idd: int,nwpsd: str)-> str:
+def change_name(idd: int,nwpsd: str):
+    """Permet de changer le pseudo de l'utilisateur
+    
+    Parameters:
+        idd : int -> id de l'utilisateur
+        nwpsd : str -> nouveau pseudo de l'utilisateur
+    # Juliann Lestrelin
+    """
+    
     connect = sqlite3.connect(database)
     cursor = connect.cursor()
     cursor.execute("UPDATE Clients SET pseudo = ? WHERE id = ?" (nwpsd, idd))
