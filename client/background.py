@@ -53,6 +53,8 @@ def make_client(pseudo: str, password: str, mail: str) -> bool:
     except:
         return False
 
+#Récupération info client
+
 def get_client(idd: int):
     """Récupère les informations du client ( nom et mail)
     Parameters:
@@ -66,4 +68,3 @@ def get_client(idd: int):
     cursor.execute("SELECT name, mail FROM Clients WHERE id == ?", (idd,))
     
     return cursor.fechone()[0]
-    
