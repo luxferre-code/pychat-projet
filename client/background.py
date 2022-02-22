@@ -28,7 +28,6 @@ def create_unique_id() -> int:
         data = cursor.fetchone()[0]
         if(data == 0): break
     return int(temps)
-
 def make_client(pseudo: str, password: str, mail: str) -> bool:
     """
     Fonction permettant la création d'un utilisateur sur la base de donnée serveur
@@ -68,8 +67,11 @@ def get_client(idd: int):
     connexion = sqlite3.connect(database)
     cursor = connexion.cursor()
     cursor.execute("SELECT pseudo, mail FROM Clients WHERE id == ?", (idd,))
+    c  = cursor.fetchone()
+    connect.commit()
+    connect.close()
+    return c
     
-    return cursor.fetchone()
 
 def to_sha256(pwd: str)->str:
     """Transformation du mot de passe en sha256 (sécurité)
@@ -103,3 +105,9 @@ def good_login(username: str, password: str) -> bool:
     if(cursor.fetchone() != None): return True
     return False
 
+def change_name(idd: int,nwpsd: str)-> str:
+    connect = sqlite3.connect(database)
+    cursor = connect.cursor()
+    cursor.execute("UPDATE Clients SET pseudo = ? WHERE id = ?" (nwpsd, idd))
+    connect.commit()
+    connect.close()
