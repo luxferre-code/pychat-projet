@@ -103,4 +103,3 @@ def good_login(username: str, password: str) -> bool:
     if(cursor.fetchone() != None): return True
     return False
 
-# Commencer le 22/02/2022
