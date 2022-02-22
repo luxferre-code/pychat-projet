@@ -18,6 +18,7 @@ def create_unique_id() -> int:
     # Valentin Thuillier
     """
     connect = sqlite3.connect(database)
+    cursor = connect.cursor()
     while True:
         temps = str(randint(0, 9))
         for _ in range(9):
@@ -25,7 +26,7 @@ def create_unique_id() -> int:
         cursor.execute('SELECT count(id) FROM Clients WHERE id = ?', (temps, ))
         data = cursor.fetchone()[0]
         if(data == 0): break
-    return temps
+    return int(temps)
 
 def make_client(pseudo: str, password: str, mail: str) -> bool:
     """
@@ -39,14 +40,14 @@ def make_client(pseudo: str, password: str, mail: str) -> bool:
     Return type: boolean (True si réussit, False si pas réussi)
     # Valentin Thuillier
     """
-    assert isinstance(pseudo, string) and len(pseudo) >= 3 and len(pseudo) <= 12, "Impossible de créer un compte client avec un pseudo ne respectant pas les régles !"
-    assert isinstance(password, string), "Merci d'entrer un mot de passe crypté en sha256 !"
-    assert isinstance(mail, string) and "@" in mail, "Merci d'entrer un mail valide !"
+    assert isinstance(pseudo, str) and len(pseudo) >= 3 and len(pseudo) <= 12, "Impossible de créer un compte client avec un pseudo ne respectant pas les régles !"
+    assert isinstance(password, str), "Merci d'entrer un mot de passe crypté en sha256 !"
+    assert isinstance(mail, str) and "@" in mail, "Merci d'entrer un mail valide !"
     
     try:
         connect = sqlite3.connect(database)
         cursor = connect.cursor()
-        cursor.execute('INSERT INTO Clients VALUES (?, ?, ?, ?)', (create_unique_id, pseudo, password, mail))
+        cursor.execute('INSERT INTO Clients VALUES (?, ?, ?, ?)', (create_unique_id(), pseudo, password, mail))
         connect.commit()
         connect.close()
         return True
