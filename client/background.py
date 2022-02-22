@@ -68,8 +68,8 @@ def get_client(idd: int):
     cursor = connexion.cursor()
     cursor.execute("SELECT pseudo, mail FROM Clients WHERE id == ?", (idd,))
     c  = cursor.fetchone()
-    connect.commit()
-    connect.close()
+    connexion.commit()
+    connexion.close()
     return c
     
 
