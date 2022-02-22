@@ -56,14 +56,14 @@ def make_client(pseudo: str, password: str, mail: str) -> bool:
 
 #Récupération info client
 
-def get_client(idd: int):
+def get_client(idd: str):
     """Récupère les informations du client ( nom et mail)
     Parameters:
-        id : int
+        id : string
     # Juliann Lestrelin
     """
     
-    assert type(idd) == int, "L'id est invalide"
+    assert type(idd) == str, "L'id est invalide"
     connexion = sqlite3.connect(database)
     cursor = connexion.cursor()
     cursor.execute("SELECT pseudo, mail FROM Clients WHERE id = ?", (idd,))
@@ -105,7 +105,7 @@ def good_login(username: str, password: str) -> bool:
     if(cursor.fetchone() != None): return True
     return False
 
-def change_name(idd: int,nwpsd: str):
+def change_name(idd: str,nwpsd: str):
     """Permet de changer le pseudo de l'utilisateur
     
     Parameters:
