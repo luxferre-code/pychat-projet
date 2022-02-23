@@ -1,0 +1,3 @@
+Pour la mise en place du serveur sur le raspberry:
+  https://raspberry-pi.fr/connecter-ssh-raspberry-pi/
+  https://raspberry-pi.fr/transferer-fichiers-raspberry-ssh/
