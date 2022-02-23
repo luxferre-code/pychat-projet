@@ -134,6 +134,25 @@ def remove_admin(idd: str) -> bool:
         return True
     else:
         return False
+    
+def ban(idd: str, user="0000000000"):
+    """ Banni l'utilisateur renseigné
+    Parameters:
+        idd : str -> id de l'utilisateur
+    
+    
+    # Juliann Lestrelin
+    """
+    assert id_in_db(idd), "L'id renseigné n'existe pas"
+    connect = sqlite3.connect(database)
+    cursor = connect.cursor()
+    cursor.execute("SELECT mail FROM Clients WHERE id = ?", (idd,))
+    c = cursor.fetchone()
+    cursor.execute("INSERT INTO Banni VALUES (?)", (c[0],))
+    cursor.execute("DELETE FROM Clients WHERE id = ?", (idd,))
+    server_logger("L'administrateur " + str(get_client(user)[0]) + " (" + idd + " ) vient de bannir " + c[0])
+    connect.commit()
+    connect.close()
 
 def server_logger(string: str) -> None:
     """
