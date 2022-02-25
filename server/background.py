@@ -1,4 +1,4 @@
-# Background file on Client
+# Background file on Server
 
 import sqlite3
 from datetime import datetime
@@ -19,7 +19,7 @@ def id_in_db(idd: str) -> bool:
     
     connect = sqlite3.connect(database)
     cursor = connect.cursor()
-    cursor.execute('SELECT count(id) FROM Clients WHERE id = ?', (idd, ))
+    cursor.execute('SELECT id FROM Clients WHERE id = ?', (idd, ))
     if(cursor.fetchone() == None):
         connect.commit()
         connect.close()
@@ -161,9 +161,76 @@ def server_logger(string: str) -> None:
     param:
     string: string
 
+
     Return type: None
     # Valentin Thuillier
     """
     assert isinstance(string, str), "Merci de spécifier un string !"
     with open('logs.txt', 'a', encoding='UTF-8') as file:
         file.write("[" + str(datetime.now()) + "] " + string + "\n")
+        
+# Création d'un client
+
+def create_unique_id() -> int:
+    """
+    Fonction permettant de créer un id unique pour un utilisateur
+    
+    param:
+    None
+    
+    Return type: integer
+    # Valentin Thuillier
+    """
+    connect = sqlite3.connect(database)
+    cursor = connect.cursor()
+    while True:
+        temps = str(randint(0, 9))
+        for _ in range(9):
+            temps += str(randint(0, 9))
+        cursor.execute('SELECT count(id) FROM Clients WHERE id = ?', (temps, ))
+        data = cursor.fetchone()[0]
+        if(data == 0): break
+    return int(temps)
+
+def make_client(pseudo: str, password: str, mail: str) -> bool:
+    """
+    Fonction permettant la création d'un utilisateur sur la base de donnée serveur
+    
+    param:
+    pseudo: string (3 <= taille <= 12)
+    password: string (crypté en sha256)
+    mail: string
+    
+    Return type: boolean (True si réussit, False si pas réussi)
+    # Valentin Thuillier
+    """
+    assert isinstance(pseudo, str) and len(pseudo) >= 3 and len(pseudo) <= 12, "Impossible de créer un compte client avec un pseudo ne respectant pas les régles !"
+    assert isinstance(password, str), "Merci d'entrer un mot de passe crypté en sha256 !"
+    assert isinstance(mail, str) and "@" in mail, "Merci d'entrer un mail valide !"
+    
+    try:
+        connect = sqlite3.connect(database)
+        cursor = connect.cursor()
+        cursor.execute('INSERT INTO Clients VALUES (?, ?, ?, ?)', (create_unique_id(), pseudo, password, mail))
+        connect.commit()
+        connect.close()
+        return True
+    except:
+        return False
+    
+def affiche_all_clients():
+    """
+    Fonction permettant l'affichage dans le shell de tous les clients mit sur le serveur
+    
+    param:
+    None
+    
+    Return type: None
+    # Valentin Thuillier
+    """
+    
+    connect = sqlite3.connect(database)
+    cursor = connect.cursor()
+    cursor.execute('SELECT id, pseudo, mail, password FROM Clients')
+    for elt in cursor.fetchall():
+        print(elt)

@@ -3,56 +3,36 @@
 import sqlite3
 from random import randint
 import hashlib
+import paramiko
+import os
 
 database = "db_server.db"
 
-# Création d'un client
+# Variable de connexion
 
-def create_unique_id() -> int:
+username = 'valjul'
+password = 'bp2022pjt'
+ip = '10.5.85.85'
+
+def make_client(pseudo: str, mail: str, pwd_no_crypted: str) -> None: # a executé make_client(pseudo: str, password: str, mail: str)
     """
-    Fonction permettant de créer un id unique pour un utilisateur
-    
-    param:
-    None
-    
-    Return type: integer
-    # Valentin Thuillier
+    Envoie de donnée de création du client au serveur
+    Parameters:
+        pseudo : str-> pseudo du client
+        mail : str-> mail du client
+        pwd_no_crypted : str-> mot de passe du client : pas en sha256
+    Return:
+        None
+    # Juliann Lestrelin
     """
-    connect = sqlite3.connect(database)
-    cursor = connect.cursor()
-    while True:
-        temps = str(randint(0, 9))
-        for _ in range(9):
-            temps += str(randint(0, 9))
-        cursor.execute('SELECT count(id) FROM Clients WHERE id = ?', (temps, ))
-        data = cursor.fetchone()[0]
-        if(data == 0): break
-    return int(temps)
-def make_client(pseudo: str, password: str, mail: str) -> bool:
-    """
-    Fonction permettant la création d'un utilisateur sur la base de donnée serveur
-    
-    param:
-    pseudo: string (3 <= taille <= 12)
-    password: string (crypté en sha256)
-    mail: string
-    
-    Return type: boolean (True si réussit, False si pas réussi)
-    # Valentin Thuillier
-    """
-    assert isinstance(pseudo, str) and len(pseudo) >= 3 and len(pseudo) <= 12, "Impossible de créer un compte client avec un pseudo ne respectant pas les régles !"
-    assert isinstance(password, str), "Merci d'entrer un mot de passe crypté en sha256 !"
-    assert isinstance(mail, str) and "@" in mail, "Merci d'entrer un mail valide !"
-    
-    try:
-        connect = sqlite3.connect(database)
-        cursor = connect.cursor()
-        cursor.execute('INSERT INTO Clients VALUES (?, ?, ?, ?)', (create_unique_id(), pseudo, password, mail))
-        connect.commit()
-        connect.close()
-        return True
-    except:
-        return False
+    # A vérfier car il y a des pb de raspberry 
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(ip, username=username, password=password)
+    client.exec_command('python3 background.py make_client' + pseudo + ' ' + to_sha256(pwd_no_crypted) + ' ' + mail)
+    print('python3 background.py make_client' + pseudo + ' ' + to_sha256(pwd_no_crypted) + ' ' + mail)
+    client.close()
+
 
 #Récupération info client
 
