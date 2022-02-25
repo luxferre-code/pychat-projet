@@ -2,6 +2,8 @@
 
 import sqlite3
 from datetime import datetime
+import sys
+from random import randint
 
 database = 'db_server.db'
 
@@ -171,14 +173,14 @@ def server_logger(string: str) -> None:
         
 # Création d'un client
 
-def create_unique_id() -> int:
+def create_unique_id() -> str:
     """
     Fonction permettant de créer un id unique pour un utilisateur
     
     param:
     None
     
-    Return type: integer
+    Return type: string
     # Valentin Thuillier
     """
     connect = sqlite3.connect(database)
@@ -190,7 +192,7 @@ def create_unique_id() -> int:
         cursor.execute('SELECT count(id) FROM Clients WHERE id = ?', (temps, ))
         data = cursor.fetchone()[0]
         if(data == 0): break
-    return int(temps)
+    return str(temps)
 
 def make_client(pseudo: str, password: str, mail: str) -> bool:
     """
@@ -207,16 +209,33 @@ def make_client(pseudo: str, password: str, mail: str) -> bool:
     assert isinstance(pseudo, str) and len(pseudo) >= 3 and len(pseudo) <= 12, "Impossible de créer un compte client avec un pseudo ne respectant pas les régles !"
     assert isinstance(password, str), "Merci d'entrer un mot de passe crypté en sha256 !"
     assert isinstance(mail, str) and "@" in mail, "Merci d'entrer un mail valide !"
+    connect = sqlite3.connect(database)
+    cursor = connect.cursor()
+    idd = str(create_unique_id())
+    cursor.execute('INSERT INTO Clients VALUES (?, ?, ?, ?)', (idd, pseudo, password, mail))
+    server_logger("Un compte vient d'être créer ! " + pseudo + " (" + idd + ")")
+    connect.commit()
+    connect.close()
+    return True
+
+def get_id(mail: str):
+    """
+    Fonction permettant de récupérer l'id d'un utilisateur grâce à son mail
     
-    try:
-        connect = sqlite3.connect(database)
-        cursor = connect.cursor()
-        cursor.execute('INSERT INTO Clients VALUES (?, ?, ?, ?)', (create_unique_id(), pseudo, password, mail))
-        connect.commit()
-        connect.close()
-        return True
-    except:
-        return False
+    param:
+    mail: str
+    
+    Return type: str
+    # Valentin Thuillier
+    """
+    connect = sqlite3.connect(database)
+    cursor = connect.cursor()
+    cursor.execute('SELECT id FROM Clients WHERE mail = ?', (mail, ))
+    data = cursor.fetchone()[0]
+    connect.commit()
+    connect.close()
+    return data
+
     
 def affiche_all_clients():
     """
