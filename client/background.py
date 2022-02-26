@@ -3,18 +3,14 @@
 import sqlite3
 from random import randint
 import hashlib
-import paramiko
 import os
+import sys
+import pysftp
+# https://www.tutorialspoint.com/python_network_programming/python_sftp.htm
 
 database = "db_server.db"
 
-# Variable de connexion
-
-username = 'valjul'
-password = 'bp2022pjt'
-ip = '10.5.85.85'
-
-def make_client(pseudo: str, mail: str, pwd_no_crypted: str) -> None: # a executé make_client(pseudo: str, password: str, mail: str)
+def make_client(pseudo: str, mail: str, pwd_no_crypted: str, send_file_name: str, author='@Console') -> None: # a executé make_client(pseudo: str, password: str, mail: str)
     """
     Envoie de donnée de création du client au serveur
     Parameters:
@@ -25,13 +21,11 @@ def make_client(pseudo: str, mail: str, pwd_no_crypted: str) -> None: # a execut
         None
     # Juliann Lestrelin
     """
-    # A vérfier car il y a des pb de raspberry 
-    client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    client.connect(ip, username=username, password=password)
-    client.exec_command('python3 background.py make_client' + pseudo + ' ' + to_sha256(pwd_no_crypted) + ' ' + mail)
-    print('python3 background.py make_client' + pseudo + ' ' + to_sha256(pwd_no_crypted) + ' ' + mail)
-    client.close()
+    # Créer un fichier avec comme ligne
+    
+    # nom_du_prochaine_fichier
+    # author
+    # commande|arg1/arg2/arg3/etc...
 
 
 #Récupération info client
@@ -42,15 +36,11 @@ def get_client(idd: str):
         id : string
     # Juliann Lestrelin
     """
+    # Créer un fichier avec comme ligne
     
-    assert type(idd) == str, "L'id est invalide"
-    connexion = sqlite3.connect(database)
-    cursor = connexion.cursor()
-    cursor.execute("SELECT pseudo, mail FROM Clients WHERE id = ?", (idd,))
-    c  = cursor.fetchone()
-    connexion.commit()
-    connexion.close()
-    return c
+    # nom_du_prochaine_fichier
+    # author
+    # commande|arg1/arg2/arg3/etc...
     
 
 def to_sha256(pwd: str)->str:
@@ -63,7 +53,7 @@ def to_sha256(pwd: str)->str:
     """
     return hashlib.sha256(bytes(pwd, 'utf-8')).hexdigest()
 
-def good_login(username: str, password: str) -> bool:
+def good_login(username: str, password: str, send_file_name: str, author='@Console') -> bool:
     """
     Fonction permettant de vérifier les identifiants de connexion
     
@@ -77,13 +67,10 @@ def good_login(username: str, password: str) -> bool:
     assert isinstance(username, str), "Merci de rentrer comme identifiants un string !"
     assert isinstance(password, str), "Merci de rentrer comme mot de passe un string !"
     
-    connect = sqlite3.connect(database)
-    cursor = connect.cursor()
-    cursor.execute('SELECT id FROM Clients WHERE pseudo = ? AND password = ?', (username, password))
-    if(cursor.fetchone() != None): return True
-    cursor.execute('SELECT id FROM Clients WHERE mail = ? AND password = ?', (username, password))
-    if(cursor.fetchone() != None): return True
-    return False
+    pwd_crypted = to_sha256(password)
+    
+    with open(send_file_name, 'a', encoding='UTF-8'):
+        file.write(send_file_name + "\n" + author + "\ngood_login|" + username + "/" + pwd_crypted)
 
 def change_name(idd: str,nwpsd: str):
     """Permet de changer le pseudo de l'utilisateur
@@ -93,14 +80,13 @@ def change_name(idd: str,nwpsd: str):
         nwpsd : str -> nouveau pseudo de l'utilisateur
     # Juliann Lestrelin
     """
+    # Créer un fichier avec comme ligne
     
-    connect = sqlite3.connect(database)
-    cursor = connect.cursor()
-    cursor.execute("UPDATE Clients SET pseudo = ? WHERE id = ?", (nwpsd, idd))
-    connect.commit()
-    connect.close()
+    # nom_du_prochaine_fichier
+    # author
+    # commande|arg1/arg2/arg3/etc...
 
-def get_id(username: str, password: str) -> int:
+def get_id(username: str, password: str, send_file_name: str, author="@Console") -> int:
     """
     Fonction qui permet de récuperer l'id d'un utilisateur grâce à son pseudo / mail et son mot de passe
     
@@ -111,22 +97,11 @@ def get_id(username: str, password: str) -> int:
     Return type: int
     # Valentin Thuillier
     """
-    connect = sqlite3.connect(database)
-    cursor = connect.cursor()
     
-    cursor.execute('SELECT id FROM Clients WHERE pseudo = ? AND password = ?', (username, password))
-    if(cursor.fetchone != None):
-        data = cursor.fetchone()[0]
-        connect.commit()
-        connect.close()
-        return data
-    cursor.execute('SELECT id FROM Clients WHERE pseudo = ? AND password = ?', (username, password))
-    if(cursor.fetchone != None):
-        data = cursor.fetchone()[0]
-        connect.commit()
-        connect.close()
-        return data
-    return None
+    pwd_cryped = to_sha256(password)
+    
+    with open(send_file_name, 'a', encoding='UTF-8'):
+        file.write(send_file_name + "\n" + author + "\nget_id|" + username + "/" + pwd_crypted)
 
 def modify_password(username: str, password: str, new_password: str) -> bool:
     """
@@ -144,16 +119,13 @@ def modify_password(username: str, password: str, new_password: str) -> bool:
     assert isinstance(password, str), "Merci de rentrer comme mot de passe un string !"
     assert isinstance(new_password, str), "Merci de rentrer comme nouveau mot de passe un string !"
     
-    if(good_login(username, password)):
-        try:
-            connect = sqlite3.connect(database)
-            cursor = connect.cursor()
-            cursor.execute('UPDATE Clients SET password = ? WHERE id = ?', (new_password ,get_id(username, password)))
-            connect.commit()
-            connect.close()
-            return True
-        except:
-            return False
-            print('Erreur sur la modification du mot de passe !')
-    else:
-        return False
+    pwd_cryped = to_sha256(password)
+    
+    with open(send_file_name, 'a', encoding='UTF-8'):
+        file.write(send_file_name + "\n" + author + "\nmodify_password|" + username + "/" + pwd_crypted + "/" + new_password)
+    
+def generate_senf_file_name():
+    temps = ''
+    for _ in range(15):
+        temps += chr(97 + randint(0, 26))
+    return to_sha256(temps) + ".lxf"
