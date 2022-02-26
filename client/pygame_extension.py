@@ -27,5 +27,5 @@ class Button:
         assert len(pos_mouse) == 2, "pos_mouse doit contenir deux coordonnées (x/y)"
         width, height = Image.open(self.__dir_tex).width, Image.open(self.__dir_tex).height
         larg_mouse, haut_mouse = pos_mouse
-        if(larg_mouse >= self.__x and larg_mouse <= self.__y + width and haut_mouse >= self.__y and haut_mouse <= self.__y + height): return True
+        if(larg_mouse >= self.__x and larg_mouse <= self.__x + width and haut_mouse >= self.__y and haut_mouse <= self.__y + height): return True
         else: return False

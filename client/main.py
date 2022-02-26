@@ -22,6 +22,7 @@ if("send" not in os.listdir()): os.mkdir("send")
 
 def login_page():
     pygame.display.set_caption("PyChat - Login Page")
+    login_button = Button('./textures/login_button.png', (1000, 520))
     username_button = Button('./textures/locate_login.png', (largeur // 2 - 700 // 2, hauteur // 3 - 50 // 2))
     username = ''
     password_button = Button('./textures/locate_login.png', (largeur // 2 - 700 // 2, hauteur // 3 + 150))
@@ -37,20 +38,23 @@ def login_page():
         password_affiche = font.render(affiche_password, True, (0,0,0))
         screen.blit(username_affiche, (username_button.get_pos()[0], username_button.get_pos()[1] + 17))
         screen.blit(password_affiche, (password_button.get_pos()[0], password_button.get_pos()[1] + 17))
+        screen.blit(login_button.get_texture(), login_button.get_pos())
         for event in pygame.event.get():
             if(event.type == pygame.QUIT): sys.exit()
             if(event.type == pygame.MOUSEBUTTONDOWN):
                 pos_mouse = pygame.mouse.get_pos()
                 if(username_button.is_cliqued(pos_mouse)): selected = 'username_field'
                 elif(password_button.is_cliqued(pos_mouse)): selected = 'password_field'
+                elif(login_button.is_cliqued(pos_mouse)):
+                    print("Username: " + username + "\nPassword: " + bg.to_sha256(password))
+                    receive_file = bg.generate_send_file_name()
+                    bg.good_login(username, password, receive_file)
                 else: selected = 'nothing'
             if(event.type == pygame.KEYDOWN):
                 if(selected == 'username_field'):
                     username = bg.text_former(username, event)
-                    print(username)
                 elif(selected == 'password_field'):
                     password = bg.text_former(password, event)
-                    print(password)
         pygame.display.flip()
     
 login_page()
