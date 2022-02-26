@@ -1,0 +1,14 @@
+<<<<<<< HEAD
+Création d'un format de transfere qui est .lxf
+
+Formation:
+	1ere ligne: nom du fichier a renvoyer # renvoyer les infos
+	2eme ligne: l'auteur # mail
+=======
+Création d'un format de transfere qui est .lxf
+
+Formation:
+	1ere ligne: nom du fichier a renvoyer # renvoyer les infos
+	2eme ligne: l'auteur # mail
+>>>>>>> 22636830a500c70b05015ef76bff3d2f205bd0da
+	3eme ligne: commande à executer # exemple: fonction|arg1/arg2/arg3/arg4/etc...

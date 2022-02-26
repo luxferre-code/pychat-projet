@@ -1,0 +1,9 @@
+<<<<<<< HEAD
+[2022-02-25 19:13:39.164536] Un compte vient d'être créer ! Valentin (1353492311)
+[2022-02-25 20:32:13.740105] Un compte vient d'être créer ! Adam (5414350350)
+[2022-02-25 20:33:20.054710] Un compte vient d'être créer ! Adam (0381202742)
+=======
+[2022-02-25 19:13:39.164536] Un compte vient d'être créer ! Valentin (1353492311)
+[2022-02-25 20:32:13.740105] Un compte vient d'être créer ! Adam (5414350350)
+[2022-02-25 20:33:20.054710] Un compte vient d'être créer ! Adam (0381202742)
+>>>>>>> 22636830a500c70b05015ef76bff3d2f205bd0da
