@@ -6,6 +6,7 @@ import hashlib
 import os
 import sys
 import pysftp
+import pygame
 # https://www.tutorialspoint.com/python_network_programming/python_sftp.htm
 
 database = "db_server.db"
@@ -31,7 +32,7 @@ def make_client(pseudo: str, mail: str, pwd_no_crypted: str, send_file_name: str
 #Récupération info client
 
 def get_client(idd: str):
-    """Récupère les informations du client ( nom et mail)
+    """Demande au serveur les informations sur l'utilisateur
     Parameters:
         id : string
     # Juliann Lestrelin
@@ -55,7 +56,7 @@ def to_sha256(pwd: str)->str:
 
 def good_login(username: str, password: str, send_file_name: str, author='@Console') -> bool:
     """
-    Fonction permettant de vérifier les identifiants de connexion
+    Fonction permettant de créer la requete pour vérifier les identifiants
     
     param:
     username: string (soit le pseudo ou bien le mail)
@@ -69,11 +70,11 @@ def good_login(username: str, password: str, send_file_name: str, author='@Conso
     
     pwd_crypted = to_sha256(password)
     
-    with open(send_file_name, 'a', encoding='UTF-8'):
+    with open('./send/' + send_file_name, 'a', encoding='UTF-8') as file:
         file.write(send_file_name + "\n" + author + "\ngood_login|" + username + "/" + pwd_crypted)
 
 def change_name(idd: str,nwpsd: str):
-    """Permet de changer le pseudo de l'utilisateur
+    """Permet de changer le pseudo d'un joueur
     
     Parameters:
         idd : int -> id de l'utilisateur
@@ -88,7 +89,7 @@ def change_name(idd: str,nwpsd: str):
 
 def get_id(username: str, password: str, send_file_name: str, author="@Console") -> int:
     """
-    Fonction qui permet de récuperer l'id d'un utilisateur grâce à son pseudo / mail et son mot de passe
+    Fonction qui permet de récuperer l'id d'un utilisateur grâce à son pseudo et son mot de passe
     
     param:
     username: string (soit le pseudo ou bien le mail)
@@ -98,17 +99,17 @@ def get_id(username: str, password: str, send_file_name: str, author="@Console")
     # Valentin Thuillier
     """
     
-    pwd_cryped = to_sha256(password)
+    pwd_crypted = to_sha256(password)
     
-    with open(send_file_name, 'a', encoding='UTF-8'):
+    with open('./send/' + send_file_name, 'a', encoding='UTF-8') as file:
         file.write(send_file_name + "\n" + author + "\nget_id|" + username + "/" + pwd_crypted)
 
-def modify_password(username: str, password: str, new_password: str) -> bool:
+def modify_password(username: str, password: str, new_password: str, send_file_name: str, author='@Console') -> bool:
     """
     Fonction permettant la modification du mot de passe de son compte
     
     param:
-    username: string (soit le pseudo ou bien le mail)
+    username: string
     password: string
     new_password: string
     
@@ -119,13 +120,19 @@ def modify_password(username: str, password: str, new_password: str) -> bool:
     assert isinstance(password, str), "Merci de rentrer comme mot de passe un string !"
     assert isinstance(new_password, str), "Merci de rentrer comme nouveau mot de passe un string !"
     
-    pwd_cryped = to_sha256(password)
+    pwd_crypted = to_sha256(new_password)
     
-    with open(send_file_name, 'a', encoding='UTF-8'):
+    with open('./send/' + send_file_name, 'a', encoding='UTF-8') as file:
         file.write(send_file_name + "\n" + author + "\nmodify_password|" + username + "/" + pwd_crypted + "/" + new_password)
     
-def generate_senf_file_name():
+def generate_send_file_name():
     temps = ''
     for _ in range(15):
         temps += chr(97 + randint(0, 26))
     return to_sha256(temps) + ".lxf"
+
+def text_former(actual_text: str, event):
+    if(event.type == pygame.KEYDOWN):
+        if(event.key == 8): actual_text = actual_text[:-1]
+        else: actual_text += chr(event.key)
+    return actual_text
