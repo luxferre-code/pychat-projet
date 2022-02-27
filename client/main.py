@@ -2,6 +2,7 @@
 import pygame, os, sys
 import background as bg
 from pygame_extension import Button
+from time import sleep
 
 # Initialisation de pygame
 
@@ -46,9 +47,16 @@ def login_page():
                 if(username_button.is_cliqued(pos_mouse)): selected = 'username_field'
                 elif(password_button.is_cliqued(pos_mouse)): selected = 'password_field'
                 elif(login_button.is_cliqued(pos_mouse)):
-                    print("Username: " + username + "\nPassword: " + bg.to_sha256(password))
                     receive_file = bg.generate_send_file_name()
                     bg.good_login(username, password, receive_file)
+                    while True:
+                        if(receive_file in os.listdir('./receive')):
+                            reponse = bg.get_reponse(receive_file)
+                            break
+                    if(reponse == True):
+                        main_page()
+                    else:
+                        print('Mauvais identifiant !')
                 else: selected = 'nothing'
             if(event.type == pygame.KEYDOWN):
                 if(selected == 'username_field'):
@@ -56,5 +64,14 @@ def login_page():
                 elif(selected == 'password_field'):
                     password = bg.text_former(password, event)
         pygame.display.flip()
+    
+def main_page():
+    pygame.display.set_caption("PyChat - Main Page")
+    while True:
+        screen.blit(background, (0, 0))
+        for events in pygame.event.get():
+            if(events.type == pygame.QUIT): sys.exit()
+        pygame.display.flip()
+    
     
 login_page()

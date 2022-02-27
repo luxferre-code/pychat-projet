@@ -131,8 +131,27 @@ def generate_send_file_name():
         temps += chr(97 + randint(0, 26))
     return to_sha256(temps) + ".lxf"
 
-def text_former(actual_text: str, event):
+def text_former(actual_text: str, event): # A refaire un peu :)
     if(event.type == pygame.KEYDOWN):
         if(event.key == 8): actual_text = actual_text[:-1]
         else: actual_text += chr(event.key)
     return actual_text
+
+def get_reponse(name_file: str):
+    with open('./receive/' + name_file, 'r', encoding='UTF-8') as file:
+        rep = file.readline()
+    if(rep == 'True'): final = True
+    elif(rep == 'False'): final = False
+    elif(rep == 'None'): final = None
+    else: final = rep
+    os.remove('./receive/' + name_file)
+    return final
+
+def send_file(file_name: str):
+    user_client = ''
+    password = ''
+    ip = ''
+    with pysftp.Connection(ip, username=user_client, password=password) as sftp:
+        with sftp.cd('receive/'):
+            sftp.put(file_name)
+    return True
