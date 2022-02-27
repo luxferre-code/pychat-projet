@@ -13,6 +13,10 @@ class Button:
     def get_texture_dir(self): return self.__dir_tex
     def get_texture(self): return self.__texture
     
+    def change_texture(self, texture_dir: str):
+        self.__dir_tex = texture_dir
+        self.__texture = pygame.image.load(texture_dir)
+    
     def change_pos(self, new_pos: tuple) -> bool:
         assert isinstance(new_pos, tuple) or isinstance(new_pos, list), "Les positions doit être soit un tuple soit une liste"
         assert len(new_pos) == 2, "new_pos doit contenir deux coordonnées (x/y)"

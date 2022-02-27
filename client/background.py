@@ -155,3 +155,26 @@ def send_file(file_name: str):
         with sftp.cd('receive/'):
             sftp.put(file_name)
     return True
+
+def read_config_file():
+    dico = {'auto_connect': False,
+            'username': '',
+            'password': ''}
+    
+    if('config' not in os.listdir()): return dico
+    
+    with open('config', 'r', encoding='UTF-8') as file:
+        temps = file.readline()
+        if(temps[:-1] == 'True'): dico['auto_connect'] = True
+        else: dico['auto_connect'] = False
+        
+        dico['username'] = file.readline()[:-1]
+        dico['password'] = file.readline()
+        
+    return dico
+
+def config_file(dico: dict):
+    if('config' in os.listdir()): os.remove('config')
+    with open('config', 'a', encoding='UTF-8') as file:
+        file.write(str(dico['auto_connect']) + '\n' + dico['username'] + '\n' + dico['password'])
+    return True
