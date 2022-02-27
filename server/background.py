@@ -247,6 +247,11 @@ def good_login(username: str, password: str) -> bool:
     Return type: boolean
     # Valentin Thuillier
     """
+    connect = sqlite3.connect(database)
+    cursor = connect.cursor()
+    cursor.execute('SELECt id FROM Clients WHERE pseudo = ? AND password = ?', (username, password))
+    if(cursor.fetchone() != None): return True
+    else: return False
 
     
 def affiche_all_clients():

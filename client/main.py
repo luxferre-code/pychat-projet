@@ -76,9 +76,8 @@ def login_page():
                     auto_connect_file['password'] = password
                     bg.config_file(auto_connect_file)
                     if(reponse == True):
-                        main_page()
+                        main_page(username, password)
                     else:
-                        print('Mauvais identifiant !')
                         password = ''
                 else: selected = 'nothing'
             if(event.type == pygame.KEYDOWN):
@@ -88,10 +87,25 @@ def login_page():
                     password = bg.text_former(password, event)
         pygame.display.flip()
     
-def main_page():
+def main_page(username: str, password: str):
     pygame.display.set_caption("PyChat - Main Page")
+    
+    temps_file_name = bg.generate_send_file_name()
+    bg.get_id(username, password, temps_file_name)
+    while True:
+        if(temps_file_name in os.listdir('./receive/')):
+            id_user = bg.get_reponse(temps_file_name)
+            break
+    print(id_user)
+    
+    pygame.display.set_caption("PyChat - Main Page | ID: " + id_user)
+    
+    blackway_font = pygame.font.Font('./font/BlackWay.otf', 30)
+    welcome_message = blackway_font.render('Welcome, ' + username, True, (255, 255, 255))
+    
     while True:
         screen.blit(background, (0, 0))
+        screen.blit(welcome_message, (10, 10))
         for events in pygame.event.get():
             if(events.type == pygame.QUIT): sys.exit()
         pygame.display.flip()

@@ -7,6 +7,7 @@ import os
 import sys
 import pysftp
 import pygame
+from PIL import Image
 # https://www.tutorialspoint.com/python_network_programming/python_sftp.htm
 
 database = "db_server.db"
@@ -103,6 +104,7 @@ def get_id(username: str, password: str, send_file_name: str, author="@Console")
     
     with open('./send/' + send_file_name, 'a', encoding='UTF-8') as file:
         file.write(send_file_name + "\n" + author + "\nget_id|" + username + "/" + pwd_crypted)
+        
 
 def modify_password(username: str, password: str, new_password: str, send_file_name: str, author='@Console') -> bool:
     """
@@ -178,3 +180,4 @@ def config_file(dico: dict):
     with open('config', 'a', encoding='UTF-8') as file:
         file.write(str(dico['auto_connect']) + '\n' + dico['username'] + '\n' + dico['password'])
     return True
+
