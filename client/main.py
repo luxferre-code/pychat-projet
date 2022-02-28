@@ -44,9 +44,9 @@ def login_page():
         screen.blit(background, (0, 0))
         screen.blit(username_button.get_texture(), username_button.get_pos())
         screen.blit(password_button.get_texture(), password_button.get_pos())
-        username_affiche = font.render(username, True, (0,0,0))
-        password_affiche = font.render(affiche_password, True, (0,0,0))
-        connexion_auto = pygame.font.Font('./font/UniSansThin.otf', 30).render('Connexion automatique', True, (255, 255, 255))
+        username_affiche = pygame.font.Font('./font/BlackWay.otf', 60).render(username, True, (0,0,0))
+        password_affiche = pygame.font.Font('./font/UniSansThin.otf', 60).render(affiche_password, True, (0,0,0))
+        connexion_auto = pygame.font.Font('./font/BlackWay.otf', 30).render('Connexion automatique', True, (255, 255, 255))
         screen.blit(username_affiche, (username_button.get_pos()[0], username_button.get_pos()[1] + 17))
         screen.blit(password_affiche, (password_button.get_pos()[0], password_button.get_pos()[1] + 17))
         screen.blit(connexion_auto, (largeur // 20 + 30, hauteur - 70))
@@ -96,12 +96,11 @@ def main_page(username: str, password: str):
         if(temps_file_name in os.listdir('./receive/')):
             id_user = bg.get_reponse(temps_file_name)
             break
-    print(id_user)
     
     pygame.display.set_caption("PyChat - Main Page | ID: " + id_user)
     
     blackway_font = pygame.font.Font('./font/BlackWay.otf', 30)
-    welcome_message = blackway_font.render('Welcome, ' + username, True, (255, 255, 255))
+    welcome_message = blackway_font.render('Welcome,  ' + username, True, (255, 255, 255))
     
     while True:
         screen.blit(background, (0, 0))
