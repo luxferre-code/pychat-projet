@@ -10,9 +10,15 @@ class Server:
         self.__database = database
         self.__logs = logs
         self.__owner_account = ['0000000000']
+        self.clear_folder('./receive/')
+        self.clear_folder('./send/')
+        
+    def clear_folder(self, folder: str):
+        for elt in os.listdir(folder):
+            os.remove(folder + elt)
         
     def set_database(self, database): self.__database = database
-    def set_logs(self, database): self.__logs = logs
+    def set_logs(self, logs): self.__logs = logs
     
     def fonction(self, cmd: str, args: tuple, author: str):
         returned = None
@@ -22,6 +28,8 @@ class Server:
             returned = bg.good_login(args[0], args[1])
         elif(cmd == 'get_id'):
             returned = bg.get_id(args[0], args[1])
+        elif(cmd == 'make_channel'):
+            returned = bg.make_channel(args[0], args[1], author=author)
         elif(cmd == 'stop'):
             idd = bg.get_id(author)
             if(idd in self.__owner_account):
@@ -36,7 +44,7 @@ class Server:
                 'commande': '',
                 'args': []}
         
-        with open('C:\\Users\\vatir\\Documents\\GitHub\\pychat-projet\\client\\send\\' + name_of_files, 'r', encoding='UTF-8') as file:
+        with open('receive/' + name_of_files, 'r', encoding='UTF-8') as file:
             dico['return_name'] = file.readline()[:-1]
             dico['author'] = file.readline()[:-1]
             temps = file.readline()
@@ -59,11 +67,11 @@ class Server:
         args.append(arg)
         dico['commande'] = command
         dico['args'] = tuple(args)
-        os.remove('C:\\Users\\vatir\\Documents\\GitHub\\pychat-projet\\client\\send\\' + name_of_files)
+        os.remove('receive/' + name_of_files)
         return dico
     
     def create_send_file(self, file_name: str, reponse: any):
-        with open('C:\\Users\\vatir\\Documents\\GitHub\\pychat-projet\\client\\receive\\' + file_name , 'a', encoding='UTF-8') as file:
+        with open('send/' + file_name , 'a', encoding='UTF-8') as file:
             file.write(str(reponse))
         return True
         
@@ -76,7 +84,7 @@ class Server:
             now = time()
             if(start + 0.5 < now):
                 start = now
-                files_getted = os.listdir('C:\\Users\\vatir\\Documents\\GitHub\\pychat-projet\\client\\send')
+                files_getted = os.listdir('receive')
                 if(files_getted != []):
                     for files in files_getted:
                         print('Quelques choses de trouvé a ' + str(datetime.now()))
@@ -86,6 +94,6 @@ class Server:
                         elif(self.create_send_file(dico_file['return_name'], returned)): pass
                         else: print('Erreur avec le fichier ' + dico_file['return_name'])
                         
-if __name__ == '__main__':
+if __name__ == '__main__' or input('MDP ==> ') == 'bp2022pjt':
     server = Server('db_server.db', True)
     server.run()

@@ -4,6 +4,7 @@ import sqlite3
 from datetime import datetime
 import sys
 from random import randint
+import os
 
 database = 'db_server.db'
 
@@ -231,10 +232,10 @@ def get_id(username: str, password: str):
     connect = sqlite3.connect(database)
     cursor = connect.cursor()
     cursor.execute('SELECT id FROM Clients WHERE pseudo = ? AND password = ?', (username, password))
-    data = cursor.fetchone()[0]
+    data = cursor.fetchone()
     connect.commit()
     connect.close()
-    return data
+    return data[0]
 
 def good_login(username: str, password: str) -> bool:
     """
@@ -269,3 +270,72 @@ def affiche_all_clients():
     cursor.execute('SELECT id, pseudo, mail, password FROM Clients')
     for elt in cursor.fetchall():
         print(elt)
+        
+def generate_id_channel():
+    os.chdir('./channels/')
+    final = ''
+    for _ in range(10):
+        final += str(randint(0, 9))
+    if(final in os.listdir()): generate_id_channel
+    else:
+        os.chdir('../')
+        return final
+        
+        
+def make_channel(channel_name: str, password: str, author='0000000000') -> bool:
+    """
+    Fonction permetannt la création d'un salon dans le serveur
+
+    param:
+    channel_name: String
+    password: String
+    author: String (id owner)
+    
+    Return type: True if is good
+    # Valentin Thuillier
+    """
+    try:
+        id_channel = generate_id_channel()
+        os.mkdir('./channels/ ' + id_channel)
+        os.chdir('./channels/ ' + id_channel)
+        
+        with open('transmittion.lxf', 'a', encoding='UTF-8'):
+            pass
+        
+        connect = sqlite3.connect('db_channel.db')
+        cursor = connect.cursor()
+        
+        cursor.execute('CREATE TABLE Banni (id PRIMARY KEY NOT NULL)')
+        cursor.execute('CREATE TABLE Member (id PRIMARY KEY NOT NULL)')
+        
+        connect.commit()
+        
+        cursor.execute('INSERT INTO Member VALUES (?)', (author, ))
+        
+        connect.commit()
+        connect.close()
+        
+        os.chdir('../..')
+        
+        connect = sqlite3.connect(database)
+        cursor = connect.cursor()
+        
+        cursor.execute('INSERT INTO Channels VALUES(?, ?, ?, ?)', (id_channel, channel_name, password, author))
+        
+        connect.commit()
+        connect.close()
+        return True
+    except:
+        return False
+
+def get_transmittion_channel(id_channel: str):
+    os.chdir('./channels')
+    if(id_channel not in os.listdir()):
+        os.chdir('..')
+        return False
+    os.chdir('./channels/' + id_channel)
+    with open('transmittion.txt', 'r', encoding='UTF-8') as file:
+        all_file = file.readlines()
+    return all_file
+
+print(get_transmittion_channel('7283282626'))
