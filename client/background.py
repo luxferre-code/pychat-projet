@@ -10,6 +10,7 @@ import pygame
 from PIL import Image
 # https://www.tutorialspoint.com/python_network_programming/python_sftp.htm
 
+sftp_server = '89.86.152.239'
 database = "db_server.db"
 
 def make_client(pseudo: str, mail: str, pwd_no_crypted: str, send_file_name: str, author='@Console') -> None: # a executé make_client(pseudo: str, password: str, mail: str)
@@ -23,12 +24,10 @@ def make_client(pseudo: str, mail: str, pwd_no_crypted: str, send_file_name: str
         None
     # Juliann Lestrelin
     """
-    # Créer un fichier avec comme ligne
+    pwd_crypted = to_sha256(pwd_no_crypted)
     
-    # nom_du_prochaine_fichier
-    # author
-    # commande|arg1/arg2/arg3/etc...
-
+    with open('./send/' + send_file_name, 'a', encoding='UTF-8') as file:
+        file.write(send_file_name + "\n" + author + "\nmake_client|" + pseudo + "/" + pwd_crypted + '/' + mail)
 
 #Récupération info client
 
@@ -105,6 +104,16 @@ def get_id(username: str, password: str, send_file_name: str, author="@Console")
     with open('./send/' + send_file_name, 'a', encoding='UTF-8') as file:
         file.write(send_file_name + "\n" + author + "\nget_id|" + username + "/" + pwd_crypted)
         
+def make_channel(name: str, send_file_name: str, password='', author='@Console'):
+    """
+
+    """
+    
+    pwd_crypted = to_sha256(password)
+    
+    with open('./send/' + send_file_name, 'a', encoding='UTF-8') as file:
+        file.write(send_file_name + '\n' + author + '\nmake_channel|' + name + '/' + pwd_crypted)
+        
 
 def modify_password(username: str, password: str, new_password: str, send_file_name: str, author='@Console') -> bool:
     """
@@ -142,7 +151,27 @@ def generate_send_file_name() -> str:
         temps += chr(97 + randint(0, 26))
     return to_sha256(temps) + ".lxf"
 
-def text_former(actual_text: str, event) -> str: # A refaire un peu :)
+# def text_former(actual_text: str, event) -> str: # A refaire un peu :)
+#     """
+#     Fonction qui permet de capter les touches de clavier et de les mettre dans une chaine de caractere
+#     
+#     param:
+#     actual_text: string
+#     event: pygame.event
+#     
+#     Return type: string
+#     # Valentin Thuillier
+#     """
+#     never_use = [1073741906, 1073741904, 1073741905, 1073741903, 127, 1073741901, 1073741902, 1073741899, 1073741898, 1073741897, 1073741896, 1073741895, 1073741894, 1073741893, 1073741892, 1073741891, 1073741890, 1073741889, 1073741888, 1073741887, 1073741886, 1073741885, 1073741884, 1073741883, 1073741882, 1073741881, 27, 178, 9, 1073742048, 1073742051, 1073742050, 32, 1073742048, 1073742054, 1073741925, 1073742052, 1073741907, 1073742049, 1073742053]
+#     if(event.type == pygame.KEYDOWN):
+#         if(event.key == pygame.K_PERIOD): actual_text += '.'
+#         elif(event.key == pygame.K_AT): actual_text += '@'
+#         elif(event.key == 8): actual_text = actual_text[:-1]
+#         elif((event.key >= 97 and event.key <= 122) or (event.key >= 48 and event.key <= 57) and event.key not in never_use): actual_text += chr(event.key)
+#         
+#     return actual_text
+
+def text_former(actual_text: str, event) -> str:
     """
     Fonction qui permet de capter les touches de clavier et de les mettre dans une chaine de caractere
     
@@ -153,10 +182,24 @@ def text_former(actual_text: str, event) -> str: # A refaire un peu :)
     Return type: string
     # Valentin Thuillier
     """
-    never_use = [1073741906, 1073741904, 1073741905, 1073741903, 127, 1073741901, 1073741902, 1073741899, 1073741898, 1073741897, 1073741896, 1073741895, 1073741894, 1073741893, 1073741892, 1073741891, 1073741890, 1073741889, 1073741888, 1073741887, 1073741886, 1073741885, 1073741884, 1073741883, 1073741882, 1073741881, 27, 178, 9, 1073742048, 1073742051, 1073742050, 32, 1073742048, 1073742054, 1073741925, 1073742052, 1073741907, 1073742049, 1073742053]
     if(event.type == pygame.KEYDOWN):
-        if(event.key == 8): actual_text = actual_text[:-1]
-        elif((event.key >= 97 and event.key <= 122) or (event.key >= 48 and event.key <= 57) and event.key not in never_use): actual_text += chr(event.key)
+        if(event.key == pygame.K_BACKSPACE): actual_text = actual_text[:-1]
+        elif(event.key == pygame.K_HASH): actual_text += '#'
+        elif(event.key == pygame.K_DOLLAR): actual_text += '$'
+        elif(event.key == pygame.K_QUOTE): actual_text += '"'
+        elif(event.key == pygame.K_LEFTPAREN): actual_text += '('
+        elif(event.key == pygame.K_RIGHTPAREN): actual_text += ')'
+        elif(event.key == pygame.K_ASTERISK or event.key == pygame.K_KP_MULTIPLY): actual_text += '*'
+        elif(event.key == pygame.K_PLUS or event.key == pygame.K_KP_PLUS): actual_text += '+'
+        elif(event.key == pygame.K_COMMA): actual_text += ','
+        elif(event.key == pygame.K_MINUS or event.key == pygame.K_KP_MINUS): actual_text += '-'
+        elif(event.key == pygame.K_SLASH or event.key == pygame.K_KP_DIVIDE): actual_text += '/'
+        elif(event.key == pygame.K_PERIOD or event.key == pygame.K_KP_PERIOD): actual_text += '.'
+        elif(event.key == pygame.K_AT): actual_text += '@'
+        elif(event.key == pygame.K_EURO): actual_text += '€'
+        elif(event.key == pygame.K_KP_ENTER or event.key == pygame.K_TAB): actual_text += '@'
+        elif((event.key >= 97 and event.key <= 122) or (event.key >= 48 and event.key <= 57)): actual_text += chr(event.key)
+        
     return actual_text
 
 def get_reponse(name_file: str):
@@ -186,16 +229,36 @@ def send_file(file_name: str) -> bool:
     
     Return type: bool
     """
-    user_client = ''
-    password = ''
-    ip = ''
+    username = 'valjul'
+    password = 'bp2022pjt'
+    cnopts = pysftp.CnOpts(knownhosts=os.path.expanduser(os.path.join('~', '.ssh', 'fake_known_hosts')))
+    cnopts.hostkeys = None
+    with pysftp.Connection(host=sftp_server, username=username, password=password, private_key=".ppk", cnopts=cnopts) as sftp:
+        print('Envoie en cours...')
+        sftp.put('./send/' + file_name, './server/receive/' + file_name)
+        print('Envoyer')
+    
+def get_file(file_name: str) -> bool:
+    """
+    Fonction qui permet de récuperer un fichier sur le serveur
+    param:
+    file_name: str (.lxf in)
+    
+    Return type: boolean
+    """
+    username = 'valjul'
+    password = 'bp2022pjt'
+
+    cnopts = pysftp.CnOpts()
+    cnopts.hostkeys = None
     try:
-        with pysftp.Connection(ip, username=user_client, password=password) as sftp:
-            with sftp.cd('receive/'):
-                sftp.put(file_name)
+        with pysftp.Connection(host=sftp_server, username=username, password=password, private_key=".ppk", cnopts=cnopts) as sftp:
+            sftp.get('./server/send/' + file_name,'./receive/' + file_name)
+            sftp.remove('./server/send/' + file_name)
         return True
     except:
         return False
+
 
 def read_config_file() -> dict:
     """
@@ -240,3 +303,37 @@ def config_file(dico: dict):
     with open('config', 'a', encoding='UTF-8') as file:
         file.write(str(dico['auto_connect']) + '\n' + dico['username'] + '\n' + dico['password'])
     return True
+
+def remove_config_file():
+    """
+    Fonction permettant de supprimer le fichier de configuration
+    
+    param:
+    None
+    
+    Return type: None
+    """
+    if('config' in os.listdir()):
+        os.remove('config')
+        
+def make_channel(name, send_file_name, password='', author='0000000000'):
+    """
+    Fonction permettant de créer le fichier à envoyer au serveur pour creer un channel
+    
+    param:
+    name: String
+    send_file_name: String
+    password: String
+    author: String
+    
+    Return type: None
+    """
+    pwd_crypted = to_sha256(password)
+    
+    with open('./send/' + send_file_name, 'a', encoding='UTF-8') as file:
+        file.write(send_file_name + "\n" + author + "\nmake_channel|" + name + "/" + pwd_crypted)
+    
+def get_chat_channel():
+    """
+    Fonction qui permet de lire les données récupére s
+    """

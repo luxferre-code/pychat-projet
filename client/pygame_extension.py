@@ -2,16 +2,21 @@ import pygame
 from PIL import Image
 
 class Button:
-    def __init__(self, texture_dir: str, pos: tuple) -> None:
+    def __init__(self, texture_dir: str, pos: tuple, interne_value=None) -> None:
         self.__x, self.__y = self.__pos = pos
         self.__dir_tex = texture_dir
         self.__texture = pygame.image.load(texture_dir)
+        self.__interne_value = interne_value
         
     def get_x(self): return self.__x
     def get_y(self): return self.__y
     def get_pos(self): return self.__pos
     def get_texture_dir(self): return self.__dir_tex
     def get_texture(self): return self.__texture
+    def get_interne_value(self): return self.__interne_value
+    
+    def set_interne_value(self, value):
+        self.__interne_value = value
     
     def change_texture(self, texture_dir: str):
         self.__dir_tex = texture_dir
