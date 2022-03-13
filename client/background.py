@@ -13,7 +13,7 @@ from PIL import Image
 sftp_server = '89.86.152.239'
 database = "db_server.db"
 
-def make_client(pseudo: str, mail: str, pwd_no_crypted: str, send_file_name: str, author='@Console') -> None: # a executé make_client(pseudo: str, password: str, mail: str)
+def make_client(pseudo: str, mail: str, pwd_no_crypted: str, send_file_name: str, author='0000000000') -> None: # a executé make_client(pseudo: str, password: str, mail: str)
     """
     Envoie de donnée de création du client au serveur
     Parameters:
@@ -22,20 +22,18 @@ def make_client(pseudo: str, mail: str, pwd_no_crypted: str, send_file_name: str
         pwd_no_crypted : str-> mot de passe du client : pas en sha256
     Return:
         None
-    # Juliann Lestrelin
+    # Juliann Lestrelin 22.02.2022
     """
     pwd_crypted = to_sha256(pwd_no_crypted)
     
     with open('./send/' + send_file_name, 'a', encoding='UTF-8') as file:
         file.write(send_file_name + "\n" + author + "\nmake_client|" + pseudo + "/" + pwd_crypted + '/' + mail)
 
-#Récupération info client
-
 def get_client(idd: str):
     """Demande au serveur les informations sur l'utilisateur
     Parameters:
         id : string
-    # Juliann Lestrelin
+    # Juliann Lestrelin 22.02.2022
     """
     # Créer un fichier avec comme ligne
     
@@ -50,11 +48,11 @@ def to_sha256(pwd: str)->str:
         pwd : str
     Return:
         str
-    # Juliann Lestrelin
+    # Juliann Lestrelin 22.02.2022
     """
     return hashlib.sha256(bytes(pwd, 'utf-8')).hexdigest()
 
-def good_login(username: str, password: str, send_file_name: str, author='@Console') -> bool:
+def good_login(username: str, password: str, send_file_name: str, author='0000000000') -> bool:
     """
     Fonction permettant de créer la requete pour vérifier les identifiants
     
@@ -63,7 +61,7 @@ def good_login(username: str, password: str, send_file_name: str, author='@Conso
     password: string
     
     Return type: boolean
-    # Valentin Thuillier
+    # Valentin Thuillier 22.02.2022
     """
     assert isinstance(username, str), "Merci de rentrer comme identifiants un string !"
     assert isinstance(password, str), "Merci de rentrer comme mot de passe un string !"
@@ -79,7 +77,7 @@ def change_name(idd: str,nwpsd: str):
     Parameters:
         idd : int -> id de l'utilisateur
         nwpsd : str -> nouveau pseudo de l'utilisateur
-    # Juliann Lestrelin
+    # Juliann Lestrelin 22.02.2022
     """
     # Créer un fichier avec comme ligne
     
@@ -87,7 +85,7 @@ def change_name(idd: str,nwpsd: str):
     # author
     # commande|arg1/arg2/arg3/etc...
 
-def get_id(username: str, password: str, send_file_name: str, author="@Console") -> int:
+def get_id(username: str, password: str, send_file_name: str, author="0000000000") -> int:
     """
     Fonction qui permet de récuperer l'id d'un utilisateur grâce à son pseudo et son mot de passe
     
@@ -96,7 +94,7 @@ def get_id(username: str, password: str, send_file_name: str, author="@Console")
     password: string
     
     Return type: int
-    # Valentin Thuillier
+    # Valentin Thuillier 22.02.2022
     """
     
     pwd_crypted = to_sha256(password)
@@ -104,16 +102,41 @@ def get_id(username: str, password: str, send_file_name: str, author="@Console")
     with open('./send/' + send_file_name, 'a', encoding='UTF-8') as file:
         file.write(send_file_name + "\n" + author + "\nget_id|" + username + "/" + pwd_crypted)
         
-def make_channel(name: str, send_file_name: str, password='', author='@Console'):
+def make_channel(name: str, send_file_name: str, password='', author='0000000000'):
     """
+    Fonction permettant la création d'un salon
 
+    param:
+    name: String
+    send_file_name: String
+    password: String
+    author: String
+
+    Return type: None
+    # Valentin Thuillier 11.03.2022
     """
     
     pwd_crypted = to_sha256(password)
     
     with open('./send/' + send_file_name, 'a', encoding='UTF-8') as file:
         file.write(send_file_name + '\n' + author + '\nmake_channel|' + name + '/' + pwd_crypted)
-        
+
+def join_channel(id_channel: str, password: str, send_file_name: str, author='0000000000') -> None:
+    """
+    Fonction qui créer le fichier pour rejoindre un serveur
+    param:
+    id_channel: string
+    password: string
+    send_file_name: string
+    author: string (author id)
+
+    Return type: None
+    # Valentin Thuillier 12/03/2022
+    """
+    pwd = to_sha256(password)
+
+    with open('./send/' + send_file_name, 'a', encoding='UTF-8') as file:
+        file.write(send_file_name + '\n' + author + '\njoin_channel|' + id_channel + '/' + pwd + '/' + author)        
 
 def modify_password(username: str, password: str, new_password: str, send_file_name: str, author='@Console') -> bool:
     """
@@ -125,7 +148,7 @@ def modify_password(username: str, password: str, new_password: str, send_file_n
     new_password: string
     
     Return type: bollean (True si effectuer, sinon False)
-    # Valentin Thuillier
+    # Valentin Thuillier 22.02.2022
     """
     assert isinstance(username, str), "Merci de rentrer comme identifiants un string !"
     assert isinstance(password, str), "Merci de rentrer comme mot de passe un string !"
@@ -135,7 +158,14 @@ def modify_password(username: str, password: str, new_password: str, send_file_n
     
     with open('./send/' + send_file_name, 'a', encoding='UTF-8') as file:
         file.write(send_file_name + "\n" + author + "\nmodify_password|" + username + "/" + pwd_crypted + "/" + new_password)
+
+def name_channel(id_channel: str, send_file_name: str, author='0000000000'):
     
+    with open('./send/' + send_file_name, 'a', encoding='UTF-8') as file:
+        file.write(send_file_name + '\n' + author + '\nname_channel|' + id_channel)
+
+
+
 def generate_send_file_name() -> str:
     """
     Cette fonction permet de generer le nom d'un fichier aléatoirement
@@ -144,7 +174,7 @@ def generate_send_file_name() -> str:
     None
     
     Return type: string
-    # Valentin Thuillier
+    # Valentin Thuillier 26.02.2022
     """
     temps = ''
     for _ in range(15):
@@ -180,7 +210,7 @@ def text_former(actual_text: str, event) -> str:
     event: pygame.event
     
     Return type: string
-    # Valentin Thuillier
+    # Valentin Thuillier 27.02.2022
     """
     if(event.type == pygame.KEYDOWN):
         if(event.key == pygame.K_BACKSPACE): actual_text = actual_text[:-1]
@@ -199,6 +229,7 @@ def text_former(actual_text: str, event) -> str:
         elif(event.key == pygame.K_EURO): actual_text += '€'
         elif(event.key == pygame.K_KP_ENTER or event.key == pygame.K_TAB): actual_text += '@'
         elif((event.key >= 97 and event.key <= 122) or (event.key >= 48 and event.key <= 57)): actual_text += chr(event.key)
+        elif(event.key == pygame.K_SPACE): actual_text += ' '
         
     return actual_text
 
@@ -209,7 +240,8 @@ def get_reponse(name_file: str):
     param:
     name_file: string
     
-    Return type: Any
+    Return type: Any 
+    # Valentin Thuillier 01.03.2022
     """
     with open('./receive/' + name_file, 'r', encoding='UTF-8') as file:
         rep = file.readline()
@@ -228,6 +260,7 @@ def send_file(file_name: str) -> bool:
     file_name: string
     
     Return type: bool
+    # Valentin Thuillier 01.03.2022
     """
     username = 'valjul'
     password = 'bp2022pjt'
@@ -237,6 +270,7 @@ def send_file(file_name: str) -> bool:
         print('Envoie en cours...')
         sftp.put('./send/' + file_name, './server/receive/' + file_name)
         print('Envoyer')
+    os.remove('./send/' + file_name)
     
 def get_file(file_name: str) -> bool:
     """
@@ -245,6 +279,7 @@ def get_file(file_name: str) -> bool:
     file_name: str (.lxf in)
     
     Return type: boolean
+    # Valentin Thuillier 01.03.2022
     """
     username = 'valjul'
     password = 'bp2022pjt'
@@ -268,7 +303,7 @@ def read_config_file() -> dict:
     None
     
     Return type: dict
-    # Valentin Thuillier
+    # Valentin Thuillier 03.03.2022
     """
     dico = {'auto_connect': False,
             'username': '',
@@ -297,7 +332,7 @@ def config_file(dico: dict):
         *password*: string
         
     Return type: True si la fonction a fonctionner
-    # Valentin Thuillier
+    # Valentin Thuillier 03.03.2022
     """
     if('config' in os.listdir()): os.remove('config')
     with open('config', 'a', encoding='UTF-8') as file:
@@ -312,6 +347,7 @@ def remove_config_file():
     None
     
     Return type: None
+    # Valentin Thuillier 03.03.2022
     """
     if('config' in os.listdir()):
         os.remove('config')
@@ -327,13 +363,47 @@ def make_channel(name, send_file_name, password='', author='0000000000'):
     author: String
     
     Return type: None
+    # Valentin Thuillier 08.03.2022
     """
     pwd_crypted = to_sha256(password)
     
     with open('./send/' + send_file_name, 'a', encoding='UTF-8') as file:
         file.write(send_file_name + "\n" + author + "\nmake_channel|" + name + "/" + pwd_crypted)
     
-def get_chat_channel():
+def get_chat_channel(id_channel: str, send_file_name: str, author='0000000000'):
     """
-    Fonction qui permet de lire les données récupére s
+    Fonction qui permet de lire les données récupére sur le channel
+    # Valentin Thuillier 12.03.2022
     """
+    with open('./send/' + send_file_name, 'a' ,encoding='UTF-8') as file:
+        file.write(send_file_name + '\n' + author + '\nget_chat|' + id_channel)
+
+def add_message(message: str, id_channel: str, send_file_name: str, author='0000000000'):
+    """
+    # Valentin Thuillier 12.03.2022
+    """
+
+    with open('./send/' + send_file_name, 'a', encoding='UTF-8') as file:
+        file.write(send_file_name + '\n' + author + '\n' + 'add_message|' + id_channel + '/' + message)
+
+def formater_chat_to_pg(file_name: str) -> list:
+    """
+    # Valentin Thuillier 13.03.2022
+    """
+    final = []
+    temps = []
+    t = ''
+    
+    with open('./receive/' + file_name, 'r', encoding='UTF-8') as file: temps = file.readlines()
+    
+    pygame.init()
+    font = pygame.font.Font('./font/BlackWay.otf', 25)
+
+    for elt in temps:
+        final.append(font.render(elt[:-1], True, (255,255,255)))
+    
+    final.reverse()
+
+    return final
+
+get_chat_channel('5919121999', 'test.lxf')
