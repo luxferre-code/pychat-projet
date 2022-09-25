@@ -4,6 +4,13 @@ import background as bg
 from pygame_extension import Button
 from time import time
 
+try:
+    os.mkdir("send")
+except: pass
+try:
+    os.mkdir("receive")
+except: pass
+
 for elt in os.listdir('./receive'):
     os.remove('./receive/' + elt)
 for elt in os.listdir('./send'):
