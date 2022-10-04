@@ -8,7 +8,6 @@ import sys
 import pysftp
 import pygame
 from PIL import Image
-# https://www.tutorialspoint.com/python_network_programming/python_sftp.htm
 
 sftp_server = '89.86.152.239'
 database = "db_server.db"
@@ -29,17 +28,14 @@ def make_client(pseudo: str, mail: str, pwd_no_crypted: str, send_file_name: str
     with open('./send/' + send_file_name, 'a', encoding='UTF-8') as file:
         file.write(send_file_name + "\n" + author + "\nmake_client|" + pseudo + "/" + pwd_crypted + '/' + mail)
 
-def get_client(idd: str):
+def get_client(idd: str, send_file_name: str, author='0000000000'):
     """Demande au serveur les informations sur l'utilisateur
     Parameters:
         id : string
     # Juliann Lestrelin 22.02.2022
     """
-    # Créer un fichier avec comme ligne
-    
-    # nom_du_prochaine_fichier
-    # author
-    # commande|arg1/arg2/arg3/etc...
+    with open('./send/' + send_file_name, 'a', encoding='UTF-8') as file:
+        file.write(send_file_name + '\n' + author + '\nget_client|' + idd)
     
 
 def to_sha256(pwd: str)->str:
@@ -71,7 +67,7 @@ def good_login(username: str, password: str, send_file_name: str, author='000000
     with open('./send/' + send_file_name, 'a', encoding='UTF-8') as file:
         file.write(send_file_name + "\n" + author + "\ngood_login|" + username + "/" + pwd_crypted)
 
-def change_name(idd: str,nwpsd: str):
+def change_name(idd: str, password: str, nwpsd: str, send_file_name: str, author='0000000000'):
     """Permet de changer le pseudo d'un joueur
     
     Parameters:
@@ -79,11 +75,11 @@ def change_name(idd: str,nwpsd: str):
         nwpsd : str -> nouveau pseudo de l'utilisateur
     # Juliann Lestrelin 22.02.2022
     """
-    # Créer un fichier avec comme ligne
     
-    # nom_du_prochaine_fichier
-    # author
-    # commande|arg1/arg2/arg3/etc...
+    pwd = to_sha256(password)
+    
+    with open('./send/' + send_file_name, 'a', encoding='UTF-8') as file:
+        file.write(send_file_name + '\n' + author + '\nchange_name|' + idd + '/' + pwd + '/' + nwpsd)
 
 def get_id(username: str, password: str, send_file_name: str, author="0000000000") -> int:
     """
@@ -160,11 +156,11 @@ def modify_password(username: str, password: str, new_password: str, send_file_n
         file.write(send_file_name + "\n" + author + "\nmodify_password|" + username + "/" + pwd_crypted + "/" + new_password)
 
 def name_channel(id_channel: str, send_file_name: str, author='0000000000'):
-    
+    """
+    # Valentin Thuillier 24.02.2022
+    """
     with open('./send/' + send_file_name, 'a', encoding='UTF-8') as file:
         file.write(send_file_name + '\n' + author + '\nname_channel|' + id_channel)
-
-
 
 def generate_send_file_name() -> str:
     """
@@ -180,26 +176,6 @@ def generate_send_file_name() -> str:
     for _ in range(15):
         temps += chr(97 + randint(0, 26))
     return to_sha256(temps) + ".lxf"
-
-# def text_former(actual_text: str, event) -> str: # A refaire un peu :)
-#     """
-#     Fonction qui permet de capter les touches de clavier et de les mettre dans une chaine de caractere
-#     
-#     param:
-#     actual_text: string
-#     event: pygame.event
-#     
-#     Return type: string
-#     # Valentin Thuillier
-#     """
-#     never_use = [1073741906, 1073741904, 1073741905, 1073741903, 127, 1073741901, 1073741902, 1073741899, 1073741898, 1073741897, 1073741896, 1073741895, 1073741894, 1073741893, 1073741892, 1073741891, 1073741890, 1073741889, 1073741888, 1073741887, 1073741886, 1073741885, 1073741884, 1073741883, 1073741882, 1073741881, 27, 178, 9, 1073742048, 1073742051, 1073742050, 32, 1073742048, 1073742054, 1073741925, 1073742052, 1073741907, 1073742049, 1073742053]
-#     if(event.type == pygame.KEYDOWN):
-#         if(event.key == pygame.K_PERIOD): actual_text += '.'
-#         elif(event.key == pygame.K_AT): actual_text += '@'
-#         elif(event.key == 8): actual_text = actual_text[:-1]
-#         elif((event.key >= 97 and event.key <= 122) or (event.key >= 48 and event.key <= 57) and event.key not in never_use): actual_text += chr(event.key)
-#         
-#     return actual_text
 
 def text_former(actual_text: str, event) -> str:
     """
@@ -229,6 +205,16 @@ def text_former(actual_text: str, event) -> str:
         elif(event.key == pygame.K_EURO): actual_text += '€'
         elif(event.key == pygame.K_KP_ENTER or event.key == pygame.K_TAB): actual_text += '@'
         elif((event.key >= 97 and event.key <= 122) or (event.key >= 48 and event.key <= 57)): actual_text += chr(event.key)
+        elif(event.key == pygame.K_KP0): actual_text += '0'
+        elif(event.key == pygame.K_KP1): actual_text += '1'
+        elif(event.key == pygame.K_KP2): actual_text += '2'
+        elif(event.key == pygame.K_KP3): actual_text += '3'
+        elif(event.key == pygame.K_KP4): actual_text += '4'
+        elif(event.key == pygame.K_KP5): actual_text += '5'
+        elif(event.key == pygame.K_KP6): actual_text += '6'
+        elif(event.key == pygame.K_KP7): actual_text += '7'
+        elif(event.key == pygame.K_KP8): actual_text += '8'
+        elif(event.key == pygame.K_KP9): actual_text += '9'
         elif(event.key == pygame.K_SPACE): actual_text += ' '
         
     return actual_text
@@ -293,7 +279,6 @@ def get_file(file_name: str) -> bool:
         return True
     except:
         return False
-
 
 def read_config_file() -> dict:
     """
@@ -395,15 +380,105 @@ def formater_chat_to_pg(file_name: str) -> list:
     t = ''
     
     with open('./receive/' + file_name, 'r', encoding='UTF-8') as file: temps = file.readlines()
+    os.remove('./receive/' + file_name)
     
     pygame.init()
     font = pygame.font.Font('./font/BlackWay.otf', 25)
 
     for elt in temps:
         final.append(font.render(elt[:-1], True, (255,255,255)))
-    
-    final.reverse()
+    try:
+        os.remove('./receive/' + file_name)
+    except: pass
 
     return final
 
-get_chat_channel('5919121999', 'test.lxf')
+def my_server_writer(liste: list) -> bool:
+    """
+    # Valentin Thuillier 18.03.2022
+    """
+    if('my_server_config.lxf' in os.listdir()): os.remove('my_server_config.lxf')
+    with open('my_server_config.lxf', 'a', encoding='UTF-8') as file:
+        for id_channel in liste:
+            file.write(id_channel)
+    return True
+
+def my_server_reader() -> list:
+    """
+    # Valentin Thuillier 18.03.2022
+    """
+    if('my_server_config.lxf' not in os.listdir()):
+        with open('my_server_config.lxf', 'a', encoding='UTF-8') as file:
+            for _ in range(6):
+                file.write('\n')
+    liste = []
+    with open('my_server_config.lxf', 'r', encoding='UTF-8') as file:
+        temps = file.readlines()
+        for k in range(6):
+            try:
+                liste.append(temps[k][:-1])
+            except:
+                liste.append('')
+    
+    final = []
+    for elt in liste:
+        if(elt != ''): final.append(elt)
+    return final
+
+def is_owner(file_name: str, id_user: str, id_server: str, author='0000000000'):
+    """
+    # Valentin Thuillier 17.03.2022
+    """
+    with open('./send/' + file_name, 'a', encoding='UTF-8') as file:
+        file.write(file_name + '\n' + author + '\nis_owner|' + id_user + '/' + id_server)
+        
+def get_nbr_my_channel(send_file_name: str, id_user: int, author='0000000000'):
+    """
+    # Valentin Thuillier 21.03.2022
+    """
+    with open('./send/' + send_file_name, 'a', encoding='UTF-8') as send_file:
+        send_file.write(send_file_name + '\n' + author + '\nnbr_channel_user|' + id_user)
+        
+def purge_chat(send_file_name: str, id_user: str, id_channel: str):
+    """
+    # Valentin Thuillier 21.03.2022
+    """
+    with open('./send/' + send_file_name, 'a', encoding='UTF-8') as send_file:
+        send_file.write(send_file_name + '\n' + id_user + '\nclear_chat|' + id_user + '/' + id_channel)
+        
+def delete_chat(send_file_name, id_user, id_channel):
+    """
+    # Juliann Lestrelin 24.03.2022
+    """
+    with open('./send/' + send_file_name, 'a', encoding='UTF-8') as send_file:
+        send_file.write(send_file_name + '\n' + id_user + '\ndelete_chat|' + id_user + '/' + id_channel)
+        
+def is_channel_open(id_channel, id_user, send_file_name):
+    """
+    # Juliann Lestrelin 24.03.2022
+    """
+    with open('./send/' + send_file_name, 'a', encoding='UTF-8') as file:
+        file.write(send_file_name + '\n' + id_user + '\nis_channel_open|' + id_channel)
+        
+def get_my_server(id_user: str, send_file_name: str):
+    """
+    # Juliann Lestrelin 24.03.2022
+    """
+    with open('./send/' + send_file_name, 'a', encoding='UTF-8') as file:
+        file.write(send_file_name + '\n' + id_user + '\nget_id_server|' + id_user)
+        
+def transfo_str_to_list_server(string: str):
+    """
+    # Juliann Lestrelin 24.03.2022
+    """
+    final = []
+    temps = ''
+    for elt in string:
+        if(elt != '/'): temps += elt
+        else:
+            final.append(temps + '\n')
+            temps = ''
+    final.append(temps)
+    for _ in range(6 - len(final)):
+        final.append('\n')
+    return final

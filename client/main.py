@@ -4,12 +4,8 @@ import background as bg
 from pygame_extension import Button
 from time import time
 
-try:
-    os.mkdir("send")
-except: pass
-try:
-    os.mkdir("receive")
-except: pass
+if('receive' not in os.listdir()): os.mkdir('receive')
+if("send" not in os.listdir()): os.mkdir("send")
 
 for elt in os.listdir('./receive'):
     os.remove('./receive/' + elt)
@@ -21,7 +17,7 @@ for elt in os.listdir('./send'):
 pygame.init()
 largeur, hauteur = taille_fenetre = (1280, 720)
 screen = pygame.display.set_mode(taille_fenetre)
-pygame.display.set_caption("PyChat")
+pygame.display.set_caption("PyChat - Initizialisasion")
 pychat_logo = pygame.image.load('./textures/pychat_logo.png')
 pygame.display.set_icon(pychat_logo)
 
@@ -29,9 +25,6 @@ pygame.display.set_icon(pychat_logo)
 
 font = pygame.font.Font('./font/UniSansThin.otf', 60)
 background = pygame.image.load('./textures/background.png')
-
-if('receive' not in os.listdir()): os.mkdir('receive')
-if("send" not in os.listdir()): os.mkdir("send")
 
 def login_page():
     largeur, hauteur = taille_fenetre = (1280, 720)
@@ -93,7 +86,6 @@ def login_page():
                     bg.good_login(username, password, receive_file)
                     # Sender et receiver
                     bg.send_file(receive_file)
-                    pygame.time.wait(1500)
                     while not(bg.get_file(receive_file)):
                         print('Rien de trouver !')
                     reponse = bg.get_reponse(receive_file)
@@ -115,7 +107,7 @@ def login_page():
         pygame.display.flip()
         
 def channel_creator(id_user: str, username: str, password: str):
-    largeur, hauteur = taille_fenetre = (500, 600)
+    taille_fenetre = (500, 600)
     screen = pygame.display.set_mode(taille_fenetre)
     
     print('Chargement de la fenetre de création de channel !')
@@ -172,8 +164,8 @@ def channel_creator(id_user: str, username: str, password: str):
                         bg.send_file(send)
                         while not(bg.get_file(send)):
                             print('Rien de trouver !')
-                        fait = bg.get_reponse(send)
-                        main_page(username, password, auto=True, id_user=id_user)
+                        id_channel = bg.get_reponse(send)
+                        chat_panel(username, password, id_user, id_channel)
                     else:
                         print('Impossible de créer le channel !')
             if(event.type == pygame.KEYDOWN):
@@ -183,7 +175,6 @@ def channel_creator(id_user: str, username: str, password: str):
                     password = bg.text_former(password, event)
         pygame.display.flip()
             
-    
 def main_page(username: str, password: str, auto=False, id_user=''):
     largeur, hauteur = taille_fenetre = (1280, 720)
     screen = pygame.display.set_mode(taille_fenetre)
@@ -203,6 +194,24 @@ def main_page(username: str, password: str, auto=False, id_user=''):
     elif(auto and id_user == ''):
         raise ValueError('Erreur PyChat !')
     
+    # Update my_serveur
+    try:
+        send_file = bg.generate_send_file_name()
+        bg.get_my_server(id_user, send_file)
+        bg.send_file(send_file)
+        while not(bg.get_file(send_file)):
+            pass
+        rep = bg.get_reponse(send_file)
+        list_of_server = bg.transfo_str_to_list_server(rep)
+        bg.my_server_writer(list_of_server)
+    except: pass
+    
+    my_server = bg.my_server_reader()
+    
+    my_server_button = []
+    for rang in range(len(my_server)):
+        my_server_button.append(Button('./textures/my_server_locate.png', (1280 - 450, 300 + 80 * rang)))
+    
     pygame.display.set_caption("PyChat - Main Page | ID: " + id_user)
     
     blackway_font = pygame.font.Font('./font/BlackWay.otf', 30)
@@ -216,6 +225,9 @@ def main_page(username: str, password: str, auto=False, id_user=''):
     # Rejoindre un channel 08/03/2022
     join_channel_button = Button('./textures/main_panel_button.png', (25, 250))
     join_channel_text = pygame.font.Font('./font/BlackWay.otf', 40).render('Rejoindre !', True, (255,255,255))
+    # Crédits page 02/04/2022
+    credit_button = Button('./textures/main_panel_button.png', (50, hauteur - 125))
+    credit_text = pygame.font.Font('./font/BlackWay.otf', 40).render('Crédits', True, (255, 255, 255))
     
     while True:
         screen.blit(background, (0, 0))
@@ -227,10 +239,27 @@ def main_page(username: str, password: str, auto=False, id_user=''):
         # Join channel
         screen.blit(join_channel_button.get_texture(), join_channel_button.get_pos())
         screen.blit(join_channel_text, (join_channel_button.get_pos()[0] + 7, join_channel_button.get_pos()[1] + 20))
+        # Crédit page
+        screen.blit(credit_button.get_texture(), credit_button.get_pos())
+        screen.blit(credit_text, (credit_button.get_pos()[0] + 7, credit_button.get_pos()[1] + 20))
+        # My server
+        for r in range(len(my_server_button)):
+            screen.blit(my_server_button[r].get_texture(), my_server_button[r].get_pos())
+            screen.blit(pygame.font.Font('./font/BlackWay.otf', 50).render(my_server[r], True, (255,255,255)), (my_server_button[r].get_pos()[0] + 20, my_server_button[r].get_pos()[1] + 10))
         for events in pygame.event.get():
-            if(events.type == pygame.QUIT): sys.exit()
+            if(events.type == pygame.QUIT):
+                while True:
+                    sys.exit()
+                exit()
             if(events.type == pygame.MOUSEBUTTONDOWN):
                 pos_mouse = pygame.mouse.get_pos()
+                
+                for r in range(len(my_server_button)):
+                    if(my_server_button[r].is_cliqued(pos_mouse)):
+                        chat_panel(username, password, id_user, my_server[r])
+                        sys.exit()
+                    
+                
                 if(logout_button.is_cliqued(pos_mouse)):
                     del(username)
                     del(password)
@@ -241,6 +270,10 @@ def main_page(username: str, password: str, auto=False, id_user=''):
                     channel_creator(id_user, username, password)
                 elif(join_channel_button.is_cliqued(pos_mouse)):
                     join_channel(username, password, id_user)
+                elif(credit_button.is_cliqued(pos_mouse)):
+                    credites()
+                    largeur, hauteur = taille_fenetre = (1280, 720)
+                    screen = pygame.display.set_mode(taille_fenetre)
         
         
         pygame.display.flip()
@@ -321,10 +354,7 @@ def join_channel(username, password_user, id_user):
                     selected = ''
             
         pygame.display.flip()
-        
-        
-        
-        
+               
 def chat_panel(username: str, password: str, id_user: str, id_channel: str):
     largeur, hauteur = taille_fenetre = (1280, 720)
     screen = pygame.display.set_mode(taille_fenetre)
@@ -356,10 +386,13 @@ def chat_panel(username: str, password: str, id_user: str, id_channel: str):
     name_channel_affiche = pygame.font.Font('./font/BlackWay.otf', 35).render('Salon:   ' + name_channel, True, (0,255,125))
     send_button = Button('./textures/send_button.png', (1280 - 85, 720 - 85))
     chat_sender = Button('./textures/chat_sender.png', (1280 - 85 - 820, 720 - 70))
-
+    clear_chat = Button('./textures/purge_icon.png', (0, 670))
+    delete_chat = Button('./textures/corbeille.png', (0, 600))
+    home_button = Button('./textures/home_button.png', (0, 50))
     start = time()
+    f = True
     
-    while True:
+    while f:
         msg_affiche = pygame.font.Font('./font/BlackWay.otf', 35).render(msg, True, (255, 255, 255))
         screen.blit(background, (0, 0))
         screen.blit(name_channel_affiche, (0, 0))
@@ -367,35 +400,30 @@ def chat_panel(username: str, password: str, id_user: str, id_channel: str):
         screen.blit(chat_sender.get_texture(), chat_sender.get_pos())
         screen.blit(send_button.get_texture(), send_button.get_pos())
         screen.blit(msg_affiche, (chat_sender.get_pos()[0] + 3, chat_sender.get_pos()[1] + 10))
+        screen.blit(clear_chat.get_texture(), clear_chat.get_pos())
+        screen.blit(delete_chat.get_texture(), delete_chat.get_pos())
+        screen.blit(home_button.get_texture(), home_button.get_pos())
 
         for k in range(len(all_chat)):
             screen.blit(all_chat[k], (largeur - 800 - 10, hauteur - 600 - 90 + (30 * k)))
 
         if(time() - start > 3):
             start = time()
-
-            send_file = bg.generate_send_file_name()
-            bg.get_chat_channel(id_channel, send_file, author=id_user)
-            bg.send_file(send_file)
-
-            while not(bg.get_file(send_file)):
-                print('Aucun chat trouvé !')
-
-            all_chat = bg.formater_chat_to_pg(send_file)
-
-        for event in pygame.event.get():
-            if(event.type == pygame.QUIT): sys.exit()
-            if(event.type == pygame.KEYDOWN): msg = bg.text_former(msg, event)
-            if(event.type == pygame.MOUSEBUTTONDOWN):
-                pos_mouse = pygame.mouse.get_pos()
-                if(send_button.is_cliqued(pos_mouse)):
-                    send_file = bg.generate_send_file_name()
-                    bg.add_message(msg, id_channel, send_file, author=id_user)
-                    bg.send_file(send_file)
-                    msg = ''
-
-                    start = time()
-
+            try:
+                
+                send_file_name = bg.generate_send_file_name()
+                bg.is_channel_open(id_channel, id_user, send_file_name)
+                bg.send_file(send_file_name)
+                while not(bg.get_file(send_file_name)):
+                    pass
+                
+                reponse = bg.get_reponse(send_file_name)
+                if(reponse == False):
+                    f = False
+                    main_page(username, password, auto=True, id_user=id_user)
+                    jjjj
+                    quit()
+                else:
                     send_file = bg.generate_send_file_name()
                     bg.get_chat_channel(id_channel, send_file, author=id_user)
                     bg.send_file(send_file)
@@ -404,12 +432,71 @@ def chat_panel(username: str, password: str, id_user: str, id_channel: str):
                         print('Aucun chat trouvé !')
 
                     all_chat = bg.formater_chat_to_pg(send_file)
+            except: pass
 
+        for event in pygame.event.get():
+            if(event.type == pygame.QUIT): sys.exit()
+            if(event.type == pygame.KEYDOWN): msg = bg.text_former(msg, event)
+            if(event.type == pygame.MOUSEBUTTONDOWN):
+                pos_mouse = pygame.mouse.get_pos()
+                if(home_button.is_cliqued(pos_mouse)):
+                    return main_page(username, password, auto=True, id_user=id_user)
+                if(delete_chat.is_cliqued(pos_mouse)):
+                    send_file = bg.generate_send_file_name()
+                    bg.delete_chat(send_file, id_user, id_channel)
+                    bg.send_file(send_file)
+                    while not(bg.get_file(send_file)):
+                        print('Aucun chat trouvé !')
+                    print(bg.get_reponse(send_file))
+                if(clear_chat.is_cliqued(pos_mouse)):
+                    send_file = bg.generate_send_file_name()
+                    bg.purge_chat(send_file, id_user, id_channel)
+                    bg.send_file(send_file)
+                    while not(bg.get_file(send_file)):
+                        print('Aucune réponse !')
+                    
+                    print(bg.get_reponse(send_file))
+                    
+                if(send_button.is_cliqued(pos_mouse)):
+                    
+                    send_file_name = bg.generate_send_file_name()
+                    bg.is_channel_open(id_channel, id_user, send_file_name)
+                    bg.send_file(send_file_name)
+                    while not(bg.get_file(send_file_name)):
+                        pass
+                    
+                    reponse = bg.get_reponse(send_file_name)
+                    print(reponse)
+                    if(reponse == False):
+                        f = False
+                        main_page(username, password, auto=True, id_user=id_user)
+                        jjjj
+                        quit()
+                    else:
+                        try:
+                            send_file = bg.generate_send_file_name()
+                            bg.add_message(msg, id_channel, send_file, author=id_user)
+                            bg.send_file(send_file)
+                            msg = ''
 
-        pygame.display.flip()
-        
-    
-    
+                            start = time()
+                            send_file = bg.generate_send_file_name()
+                            bg.get_chat_channel(id_channel, send_file, author=id_user)
+                            bg.send_file(send_file)
+
+                            while not(bg.get_file(send_file)):
+                                print('Aucun chat trouvé !')
+
+                            all_chat = bg.formater_chat_to_pg(send_file)
+                            if(all_chat == '-1'):
+                                f = False
+                                main_page(username, password, auto=True, id_user=id_user)
+                                jjjj
+                                quit()
+                        except:
+                            pass
+
+        pygame.display.flip()   
     
 def create_account():
     pygame.display.set_caption('PyChat - Create Account')
@@ -449,14 +536,14 @@ def create_account():
         screen.blit(mdp_activated.get_texture(), mdp_activated.get_pos())
         screen.blit(confirm_mdp_activated.get_texture(), confirm_mdp_activated.get_pos())
 
-        if(mdp_activated.get_interne_value()): screen.blit(pygame.font.Font('./font/BlackWay.otf', 50).render(password, True, (255,255,255)),(50, 250))
-        else: screen.blit(pygame.font.Font('./font/UniSansThin.otf', 65).render('*' * len(confirm_pwd), True, (255,255,255)),(50,370))
-
-        if(confirm_mdp_activated.get_interne_value()): screen.blit(pygame.font.Font('./font/BlackWay.otf', 50).render(confirm_pwd, True, (255,255,255)),(50,350))
-        else: screen.blit(pygame.font.Font('./font/UniSansThin.otf', 65).render('*' * len(password), True, (255,255,255)),(50, 270))
+        if(mdp_activated.get_interne_value() and confirm_mdp_activated.get_interne_value()):
+            screen.blit(pygame.font.Font('./font/BlackWay.otf', 50).render(password, True, (255,255,255)),(50, 250))
+            screen.blit(pygame.font.Font('./font/BlackWay.otf', 50).render(confirm_pwd, True, (255,255,255)),(50,350))
+        else:
+            screen.blit(pygame.font.Font('./font/UniSansThin.otf', 65).render('*' * len(confirm_pwd), True, (255,255,255)), (50,370))
+            screen.blit(pygame.font.Font('./font/UniSansThin.otf', 65).render('*' * len(password), True, (255,255,255)), (50,270))
             
        
-        
         for event in pygame.event.get():
             if(event.type == pygame.KEYDOWN):
                 
@@ -510,18 +597,41 @@ def create_account():
                 elif(confirm_pwd_field.is_cliqued(pos_mouse)):
                     selected = 'confirm_pwd_field'
                 elif(mail_field.is_cliqued(pos_mouse)):
-                    selected = 'mail_field'
-                        
-                        
-       
-                        
-                    
-                
+                    selected = 'mail_field'   
         #print(username_field.is_cliqued(pos_mouse))
         pygame.display.flip()
+        
+def credites():
+    largeur, hauteur = taille = (1000, 450)
+    screen = pygame.display.set_mode(taille)
+
+    print('Chargement de la page crédits !')
+    pygame.display.set_caption("PyChat - Credits Page")
     
-if __name__ == '__main__' and True:
-    #join_channel('@Console', 'root', '0000000000')
-    #channel_creator('0000000000', '@Console', 'root')
-    #chat_panel('Valentin', '', '0000000000', '1234567890')
-    login_page()
+    valentin_button = Button('./textures/valentin.jpg', (30, 111))
+    juliann_button = Button('./textures/juliann.png', (largeur - 30 - 227, 111))
+    
+    while True:
+        screen.blit(background, (0, 0))
+        screen.blit(valentin_button.get_texture(), valentin_button.get_pos())
+        screen.blit(juliann_button.get_texture(), juliann_button.get_pos())
+        
+        screen.blit(pygame.font.Font('./font/BlackWay.otf', 65).render('Crédits: ', True, (255,255,255)), (largeur // 2 - 75, 50))
+        screen.blit(pygame.font.Font('./font/BlackWay.otf', 65).render('Valentin', True, (255,255,255)), (45, 111 + 227))
+        screen.blit(pygame.font.Font('./font/BlackWay.otf', 65).render('Juliann', True, (255,255,255)), (largeur - 10 - 227, 111 + 227))
+
+        
+        for event in pygame.event.get():
+            if(event.type == pygame.QUIT): return
+            elif(event.type == pygame.MOUSEBUTTONDOWN):
+                pos_mouse = pygame.mouse.get_pos()
+                
+                if(valentin_button.is_cliqued(pos_mouse)):
+                    os.system('start https://github.com/TheAngelLCF')
+                    
+                elif(juliann_button.is_cliqued(pos_mouse)):
+                    os.system('start https://github.com/F0rc3o')
+        
+        pygame.display.flip()
+    
+if __name__ == '__main__' and True: login_page()

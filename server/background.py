@@ -210,8 +210,18 @@ def make_client(pseudo: str, password: str, mail: str) -> bool:
     assert isinstance(pseudo, str) and len(pseudo) >= 3 and len(pseudo) <= 12, "Impossible de créer un compte client avec un pseudo ne respectant pas les régles !"
     assert isinstance(password, str), "Merci d'entrer un mot de passe crypté en sha256 !"
     assert isinstance(mail, str) and "@" in mail, "Merci d'entrer un mail valide !"
+    # Securité
+    # Pseudo
+    
     connect = sqlite3.connect(database)
     cursor = connect.cursor()
+    cursor.execute('SELECT count(pseudo) FROM Clients WHERE pseudo = ?', (pseudo, ))
+    data = cursor.fetchone()[0]
+    if(data == 1): return '4'
+    
+    #
+    
+    
     idd = str(create_unique_id())
     cursor.execute('INSERT INTO Clients VALUES (?, ?, ?, ?)', (idd, pseudo, password, mail))
     server_logger("Un compte vient d'être créer ! " + pseudo + " (" + idd + ")")
@@ -299,8 +309,8 @@ def make_channel(channel_name: str, password: str, author='0000000000') -> bool:
         os.mkdir('./channels/ ' + id_channel)
         os.chdir('./channels/ ' + id_channel)
         
-        with open('transmittion.lxf', 'a', encoding='UTF-8'):
-            pass
+        with open('transmittion.lxf', 'a', encoding='UTF-8'): pass
+        with open('last_connected.lxf', 'a', encoding='UTF-8'): pass
         
         connect = sqlite3.connect('db_channel.db')
         cursor = connect.cursor()
@@ -324,7 +334,10 @@ def make_channel(channel_name: str, password: str, author='0000000000') -> bool:
         
         connect.commit()
         connect.close()
-        return True
+
+        new_member(id_channel, author)
+
+        return id_channel
     except:
         return False
 
@@ -338,4 +351,261 @@ def get_transmittion_channel(id_channel: str):
         all_file = file.readlines()
     return all_file
 
-print(get_transmittion_channel('7283282626'))
+def join_channel(id_user: str, id_channel: str, password: str) -> bool:
+    """
+    Fonction permettant de créer un salon
+
+    param:
+    id_user: string
+    id_channel: string
+    password: string
+
+    Return type: boolean
+    # Valentin Thuillier 12.03.2022
+    """
+    if(" " + id_channel not in os.listdir('./channels/')): return False
+
+    # Securité
+    connect = sqlite3.connect(database)
+    cursor = connect.cursor()
+
+    cursor.execute('SELECT count(id) FROM Channels WHERE id = ? AND password = ?', (id_channel, password))
+    if(cursor.fetchone()[0] == 0):
+        return False
+    #
+    try:
+        connect = sqlite3.connect('./channels/ ' + id_channel +'/db_channel.db')
+        cursor = connect.cursor()
+
+        cursor.execute('SELECT count(id) FROM Member WHERE id = ?', (id_user, ))
+        if(cursor.fetchone()[0] == 0):
+            cursor.execute('INSERT INTO Member VALUES (?)', (id_user,))
+            new_member(id_channel, id_user)
+
+        connect.commit()
+        connect.close()
+
+
+        return True
+    except: return False
+    
+def is_channel_open(id_channel: str):
+    """
+    # Juliann Lestrelin 24.03.2022
+    """
+    return ' ' + id_channel in os.listdir('./channels/')
+
+def name_channel(id_channel, author='000000000'):
+    """
+    Fonction qui permet de récupérer le nom d'un salon par son id
+
+    param:
+    id_channel: string
+    author: string(id author)
+
+    Return type: String or None
+
+    # Valentin Thuillier 12.03.2022
+    """
+    if(" " + id_channel not in os.listdir('./channels/')): return None
+
+    try:
+        connect = sqlite3.connect(database)
+        cursor = connect.cursor()
+
+        cursor.execute('SELECT name FROM Channels WHERE id = ?', (id_channel, ))
+
+        data = cursor.fetchone()[0]
+        connect.commit()
+        connect.close()
+        
+        return data
+    except: return None
+
+
+# Code spécial pour le chat !
+
+def decalage(dico: dict) -> dict:
+    """
+    # Valentin Thuillier 12.03.2022
+    """
+    dico_temps = {0: ''}
+    for k in range(1, 20):
+        dico_temps[k] = dico[k-1]
+    return dico_temps
+
+def new_member(channel_id: str, new_member: str):
+    """
+    # Valentin Thuillier 12.03.2022
+    """
+    add_message(channel_id, get_client(new_member)[0] + ' vient de rejoindre le salon !')
+
+def ban_member(channel_id, id_user, author):
+    """
+    # Valentin Thuillier 12.03.2022
+    """
+    add_message(channel_id, get_client(id_user)[0] + ' vient d\'être banni par ' + get_client(author)[0])
+
+def add_message(channel_id: str, message: str, author='0000000000'):
+    """
+    # Valentin Thuillier 12.03.2022
+    """
+    
+    msg = get_client(author)[0] + ' : ' + message
+    dico = format_transmittion(channel_id)
+    x = False
+    y = True
+    for k in range(20):
+        if((dico[k] == '' or dico[k] == '\n') and y):
+            dico[k] = msg
+            y = False
+        elif(k == 19 and y): x = True
+    if(x):
+        dico = decalage(dico)
+        dico[0] = msg
+    
+    final = ''
+    for k in range(20):
+        final += dico[k] + '\n'
+
+    return final
+
+
+def check_message_place(channel_id: str, author='0000000000') -> list:
+    """
+    # Valentin Thuillier 12.03.2022
+    """
+    final = []
+    with open('./channels/ ' + channel_id + '/transmittion.lxf', 'r', encoding='UTF-8') as file:
+        for _ in range(20):
+            temps = file.readline()
+            if('\n' in temps):
+                temps = temps[:-1]
+            final.append(temps)
+    return final
+
+
+def format_transmittion(channel_id: str):
+    """
+    # Valentin Thuillier 12.03.2022
+    """
+    liste = check_message_place(channel_id)
+    dico = {}
+    for k in range(20):
+        dico[k] = liste[k]
+    return dico
+
+def save_chat(channel_id: str, total: str):
+    """
+    # Valentin Thuillier 12.03.2022
+    """
+    os.remove('./channels/ ' + channel_id + '/transmittion.lxf')
+    with open('./channels/ ' + channel_id + '/transmittion.lxf', 'a', encoding='UTF-8') as file:
+        file.write(total)
+    return True
+
+def formater_sender(liste: list) -> str:
+    """
+    # Valentin Thuillier 13.03.2022
+    """
+    final = ''
+    for elt in liste:
+        final += elt
+    return final
+
+def get_chat(channel_id: str, author='0000000000'):
+    """
+    # Valentin Thuillier 13.03.2022
+    """
+    if(' ' + channel_id not in os.listdir('./channels')): return -1
+    with open('./channels/ ' + channel_id + '/transmittion.lxf', 'r', encoding='UTF-8') as file:
+        return formater_sender(file.readlines())
+    
+def nbr_channel_user(id_user: str, author='0000000000') -> int:
+    """
+    # Valentin Thuillier 22.03.2022
+    """
+    connect = sqlite3.connect(database)
+    cursor = connect.cursor()
+    cursor.execute('SELECT count(id) FROM Channels WHERE id_owner = ?', (id_user, ))
+    data = cursor.fetchone()[0]
+    connect.commit()
+    connect.close()
+    return data
+
+def purge_all_channels(author='0000000000'):
+    """
+    # Valentin Thuillier 22.03.2022
+    """
+    connect = sqlite3.connect(database)
+    cursor = connect.cursor()
+    cursor.execute('DELETE FROM Channels WHERE id != 1')
+    
+def clear_chat(id_user: str, id_channel: str):
+    """
+    # Valentin Thuillier 22.03.2022
+    """
+    if(is_owner(id_user, id_channel)):
+        os.remove('./channels/ ' + id_channel + '/transmittion.lxf')
+        with open('./channels/ ' + id_channel + '/transmittion.lxf', 'a', encoding='UTF-8') as file:
+            file.write('Le chat vient d\'être purger !')
+    else: return '9'
+
+def is_owner(id_user: str, id_channel: str):
+    """
+    # Valentin Thuillier 22.03.2022
+    """
+    if(id_user in ['8039828445', '9677514291', '0000000000']): return True
+    connect = sqlite3.connect(database)
+    cursor = connect.cursor()
+    cursor.execute('SELECT count(id) FROM Channels WHERE id = ? AND id_owner = ?', (id_channel, id_user))
+    data = cursor.fetchone()[0]
+    connect.commit()
+    connect.close()
+    if(data == 1): return True
+    else: return False
+    
+def delete_channel(id_user, id_channel):
+    """
+    # Valentin Thuillier 22.03.2022
+    """
+    try:
+        if(is_owner(id_user, id_channel)):
+            connect = sqlite3.connect(database)
+            cursor = connect.cursor()
+            cursor.execute('DELETE FROM Channels WHERE id = ?', (id_channel,))
+            connect.commit()
+            connect.close()
+            os.remove('./channels/ ' + id_channel + '/transmittion.lxf')
+            os.remove('./channels/ ' + id_channel + '/last_connected.lxf')
+            os.remove('./channels/ ' + id_channel + '/db_channel.db')
+            os.rmdir('./channels/ ' + id_channel)
+            return True
+        else: return '9'
+    except:
+        return False
+    
+def text_banni(text: str) -> bool:
+    """
+    # Juliann Lestrelin 22.03.2022
+    """
+    liste_interdites = ["nazi", "arien", "pute", "salope", "enfoire", "connard", "sale", "bite", "couilles", "bougnoul", "bougnoule", "negro", "beteu", "zemour","pute","pouffe","pouf","poufiase","pouffy","poufyase"
+    ,"pouffyase","cul","enculé","en cule","ntm","nique ta mère","enfoiré","pd","salot","fuck","bitch","biatch","motherfucker","fuckoff","ass","asshole","fucking","fdp","fuq","facka","facker","fucker"]
+    for elt in liste_interdites:
+        if(elt in text): return True
+    return False
+
+def get_id_server(id_user: str) -> str:
+    """
+    # Juliann Lestrelin 24.03.2022
+    """
+    connect = sqlite3.connect(database)
+    cursor = connect.cursor()
+    cursor.execute('SELECT id FROM Channels WHERE id_owner = ?', (id_user, ))
+    data = cursor.fetchall()
+    connect.commit()
+    connect.close()
+    final = ''
+    for elt in data:
+        final += elt[0] + '/'
+    return final[:-1]
